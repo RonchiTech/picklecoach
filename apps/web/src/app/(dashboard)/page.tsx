@@ -1,15 +1,23 @@
-import { redirect } from 'next/navigation'
-import { isAuthenticated } from '@/lib/auth'
+import type { DashboardStats } from '@picklecoach/shared'
+import { serverApiFetch } from '@/lib/server-api'
+import { StatCard } from '@/components/dashboard/StatCard'
 
 export default async function DashboardPage() {
-  const authenticated = await isAuthenticated()
-  if (!authenticated) redirect('/login')
+  const stats = await serverApiFetch<DashboardStats>('/api/v1/dashboard/stats')
+
+  const todaySessions = stats?.todaySessions ?? 0
+  const totalStudents = stats?.totalStudents ?? 0
+  const unpaidBalance = stats?.unpaidBalance ?? 0
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-base">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-text-primary">Dashboard</h1>
-        <p className="mt-2 text-text-secondary">Coming in Plan 3</p>
+    <div>
+      <h1 className="font-outfit text-3xl font-bold text-text-primary">Dashboard</h1>
+      <p className="mt-1 text-sm text-text-secondary">Your coaching overview</p>
+
+      <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard value={todaySessions} label="Sessions Today" />
+        <StatCard value={totalStudents} label="Total Students" />
+        <StatCard value={unpaidBalance} label="Unpaid Balance" prefix="₱" />
       </div>
     </div>
   )

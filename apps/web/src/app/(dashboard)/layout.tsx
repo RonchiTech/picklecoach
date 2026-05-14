@@ -1,10 +1,26 @@
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+import { redirect } from 'next/navigation'
+import type { SubscriptionTier } from '@picklecoach/shared'
+import { serverApiFetch } from '@/lib/server-api'
+import { Sidebar } from '@/components/dashboard/Sidebar'
+
+type UserData = {
+  name: string
+  subscriptionTier: SubscriptionTier
+  subscriptionStatus: string
+}
+
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const user = await serverApiFetch<UserData>('/api/v1/auth/me')
+  if (!user) redirect('/login')
+
   return (
-    <div className="flex min-h-screen bg-base">
-      <aside className="w-52 border-r border-border flex-shrink-0 p-4">
-        <span className="font-outfit font-bold text-accent text-lg">PC</span>
-      </aside>
-      <main className="flex-1 p-6 overflow-auto">{children}</main>
+    <div className="flex h-screen bg-base">
+      <Sidebar
+        coachName={user.name}
+        subscriptionTier={user.subscriptionTier}
+        subscriptionStatus={user.subscriptionStatus}
+      />
+      <main className="flex-1 overflow-auto p-8">{children}</main>
     </div>
   )
 }
