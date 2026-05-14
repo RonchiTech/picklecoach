@@ -1,0 +1,6 @@
+process.env.NODE_ENV = 'test'
+process.env.MONGODB_URI = 'mongodb://localhost:27017/picklecoach_test'
+process.env.JWT_SECRET = 'test-secret-that-is-at-least-16-chars'
+process.env.JWT_EXPIRES_IN = '7d'
+process.env.CLIENT_URL = 'http://localhost:3000'
+process.env.PORT = '4000'
