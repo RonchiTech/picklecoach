@@ -3,6 +3,7 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { errorMiddleware } from './middleware/error.middleware'
 import { notFoundMiddleware } from './middleware/notFound.middleware'
+import { authRoutes } from './modules/auth/auth.routes'
 import { env } from './config/env'
 
 export function createApp() {
@@ -16,8 +17,7 @@ export function createApp() {
     res.json({ success: true, data: { status: 'ok' } })
   })
 
-  // Routes mounted here in future plans
-  // app.use('/api/v1/auth', authRoutes)
+  app.use('/api/v1/auth', authRoutes)
 
   app.use(notFoundMiddleware)
   app.use(errorMiddleware)
