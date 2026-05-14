@@ -32,3 +32,9 @@ export interface ApiError {
 }
 
 export type ApiResponse<T> = ApiSuccess<T> | ApiError
+
+export interface DashboardStats {
+  todaySessions: number
+  totalStudents: number
+  unpaidBalance: number
+}
