@@ -38,3 +38,16 @@ export interface DashboardStats {
   totalStudents: number
   unpaidBalance: number
 }
+
+export interface PublicStudent {
+  _id: string
+  coachId: string
+  name: string
+  email?: string
+  phone?: string
+  skillLevel: SkillLevel
+  notes?: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
