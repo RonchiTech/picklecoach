@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser'
 import { errorMiddleware } from './middleware/error.middleware'
 import { notFoundMiddleware } from './middleware/notFound.middleware'
 import { authRoutes } from './modules/auth/auth.routes'
+import { dashboardRoutes } from './modules/dashboard/dashboard.routes'
 import { env } from './config/env'
 
 export function createApp() {
@@ -18,6 +19,7 @@ export function createApp() {
   })
 
   app.use('/api/v1/auth', authRoutes)
+  app.use('/api/v1/dashboard', dashboardRoutes)
 
   app.use(notFoundMiddleware)
   app.use(errorMiddleware)
