@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+  --color-base: #0C0C10;
+  --color-surface: #16161E;
+  --color-border: #22222E;
+  --color-muted: #555566;
+  --color-accent: #C8F135;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #CCCCCC;
+  --color-error: #FF6B6B;
+
+  --font-family-outfit: var(--font-outfit), sans-serif;
+  --font-family-dm: var(--font-dm-sans), sans-serif;
+}
+
 :root {
   --font-outfit: 'Outfit', sans-serif;
   --font-dm-sans: 'DM Sans', sans-serif;
