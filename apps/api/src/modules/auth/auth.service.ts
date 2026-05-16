@@ -23,8 +23,13 @@ export interface AuthResult {
   token: string
 }
 
+type OnRegisterFn = (userId: string, name: string) => Promise<void>
+
 export class AuthService {
-  constructor(private repo: IAuthRepository) {}
+  constructor(
+    private repo: IAuthRepository,
+    private onRegister: OnRegisterFn = async () => {}
+  ) {}
 
   async register(input: RegisterInput): Promise<AuthResult> {
     const exists = await this.repo.emailExists(input.email)
@@ -37,6 +42,8 @@ export class AuthService {
       passwordHash,
       phone: input.phone,
     })
+
+    await this.onRegister(user._id.toString(), user.name)
 
     return { user: this.sanitize(user), token: this.signToken(user) }
   }

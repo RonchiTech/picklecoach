@@ -22,11 +22,13 @@ const mockRepo: jest.Mocked<IAuthRepository> = {
   updatePassword: jest.fn(),
 }
 
+const mockOnRegister = jest.fn()
+
 let service: AuthService
 
 beforeEach(() => {
   jest.clearAllMocks()
-  service = new AuthService(mockRepo)
+  service = new AuthService(mockRepo, mockOnRegister)
 })
 
 describe('AuthService.register', () => {
@@ -57,6 +59,14 @@ describe('AuthService.register', () => {
     expect(result.token).toBeDefined()
     expect(result.user.email).toBe('ron@test.com')
     expect((result.user as unknown as Record<string, unknown>).passwordHash).toBeUndefined()
+  })
+
+  it('calls onRegister with the new userId and name after creating the user', async () => {
+    mockRepo.emailExists.mockResolvedValue(false)
+    mockRepo.create.mockResolvedValue(mockUser)
+    mockOnRegister.mockResolvedValue(undefined)
+    await service.register({ name: 'Ron', email: 'ron@test.com', password: 'password123' })
+    expect(mockOnRegister).toHaveBeenCalledWith('507f1f77bcf86cd799439011', 'Coach Ron')
   })
 })
 
