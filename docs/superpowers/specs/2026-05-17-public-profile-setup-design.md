@@ -197,7 +197,7 @@ export const updateCoachProfileSchema = z.object({
   groupRate: z.number().min(0).optional(),
   ratesNote: z.string().optional(),
   contactEmail: z.string().email().optional().or(z.literal('')),
-  contactPhone: z.string().optional(),
+  contactPhone: z.string().optional().or(z.literal('')),
   showContactInfo: z.boolean().optional(),
   isPublic: z.boolean().optional(),
 })
