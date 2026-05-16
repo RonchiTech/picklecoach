@@ -9,6 +9,7 @@ import { studentRoutes } from './modules/student/student.routes'
 import { sessionRoutes } from './modules/session/session.routes'
 import { paymentRoutes } from './modules/payment/payment.routes'
 import { coachProfileRoutes } from './modules/coach-profile/coach-profile.routes'
+import { publicCoachesRoutes } from './modules/public-coaches/public-coaches.routes'
 import { env } from './config/env'
 
 export function createApp() {
@@ -28,6 +29,7 @@ export function createApp() {
   app.use('/api/v1/sessions', sessionRoutes)
   app.use('/api/v1/payments', paymentRoutes)
   app.use('/api/v1/coach-profiles', coachProfileRoutes)
+  app.use('/api/v1/coaches', publicCoachesRoutes)
 
   app.use(notFoundMiddleware)
   app.use(errorMiddleware)
