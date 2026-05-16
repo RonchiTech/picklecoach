@@ -21,5 +21,7 @@ router.post('/logout', controller.logout)
 router.get('/me', authenticate, controller.me)
 router.patch('/profile', authenticate, controller.updateProfile)
 router.patch('/password', authenticate, controller.changePassword)
+router.post('/forgot-password', controller.forgotPassword)
+router.post('/reset-password', controller.resetPassword)
 
 export { router as authRoutes }

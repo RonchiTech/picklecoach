@@ -4,6 +4,8 @@ import {
   loginSchema,
   updateProfileSchema,
   updatePasswordSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from '@picklecoach/shared'
 import { AuthService } from './auth.service'
 import { env } from '../../config/env'
@@ -69,6 +71,29 @@ export class AuthController {
       const input = updatePasswordSchema.parse(req.body)
       await this.service.changePassword(req.user!.userId, input)
       res.json({ success: true, data: { message: 'Password updated' } })
+    } catch (err) {
+      next(err)
+    }
+  }
+
+  forgotPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email } = forgotPasswordSchema.parse(req.body)
+      await this.service.forgotPassword(email)
+      res.json({
+        success: true,
+        data: { message: 'If that email is registered, a reset link has been sent.' },
+      })
+    } catch (err) {
+      next(err)
+    }
+  }
+
+  resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { token, newPassword } = resetPasswordSchema.parse(req.body)
+      await this.service.resetPassword(token, newPassword)
+      res.json({ success: true, data: { message: 'Password updated successfully.' } })
     } catch (err) {
       next(err)
     }
