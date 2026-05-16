@@ -28,7 +28,7 @@ export function PaymentForm({ students, payment }: PaymentFormProps) {
     const form = e.currentTarget
     const getValue = (name: string) =>
       (form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)
-        .value
+        ?.value ?? ''
 
     const body = {
       studentId: getValue('studentId'),
