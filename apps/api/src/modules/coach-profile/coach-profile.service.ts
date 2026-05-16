@@ -2,6 +2,7 @@ import type { UpdateCoachProfileInput } from '@picklecoach/shared'
 import type { ICoachProfileRepository } from './coach-profile.repository'
 import type { ICoachProfile } from './coach-profile.model'
 import { createError } from '../../middleware/error.middleware'
+import { cloudinary } from '../../config/cloudinary'
 
 export class CoachProfileService {
   constructor(private repo: ICoachProfileRepository) {}
@@ -23,8 +24,24 @@ export class CoachProfileService {
     return profile
   }
 
-  async uploadPhoto(_coachId: string, _buffer: Buffer): Promise<ICoachProfile> {
-    throw createError('Not implemented', 501, 'NOT_IMPLEMENTED')
+  async uploadPhoto(coachId: string, buffer: Buffer): Promise<ICoachProfile> {
+    const photoUrl = await this.uploadToCloudinary(buffer)
+    const profile = await this.repo.updatePhoto(coachId, photoUrl)
+    if (!profile) throw createError('Profile not found', 404, 'PROFILE_NOT_FOUND')
+    return profile
+  }
+
+  private uploadToCloudinary(buffer: Buffer): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: 'picklecoach/profiles', resource_type: 'image' },
+        (error: Error | undefined, result: { secure_url: string } | undefined) => {
+          if (error || !result) return reject(error ?? new Error('Cloudinary upload failed'))
+          resolve(result.secure_url)
+        }
+      )
+      stream.end(buffer)
+    })
   }
 
   private async generateUniqueSlug(name: string): Promise<string> {

@@ -85,3 +85,42 @@ describe('CoachProfileService.updateProfile', () => {
     expect(mockRepo.update).toHaveBeenCalledWith('coach-id', { displayName: 'New Name' })
   })
 })
+
+jest.mock('../../config/cloudinary', () => ({
+  cloudinary: {
+    uploader: {
+      upload_stream: jest.fn(
+        (_opts: unknown, cb: (err: null, result: { secure_url: string }) => void) => {
+          cb(null, { secure_url: 'https://res.cloudinary.com/test/image/upload/test.jpg' })
+          return { end: jest.fn() }
+        }
+      ),
+    },
+  },
+}))
+
+describe('CoachProfileService.uploadPhoto', () => {
+  it('throws PROFILE_NOT_FOUND when repo.updatePhoto returns null', async () => {
+    mockRepo.updatePhoto.mockResolvedValue(null)
+    const buffer = Buffer.from('fake-image')
+    await expect(service.uploadPhoto('coach-id', buffer)).rejects.toMatchObject({
+      code: 'PROFILE_NOT_FOUND',
+      statusCode: 404,
+    })
+  })
+
+  it('uploads to Cloudinary and updates the profile photoUrl', async () => {
+    const updated = {
+      ...mockProfile,
+      photoUrl: 'https://res.cloudinary.com/test/image/upload/test.jpg',
+    } as unknown as ICoachProfile
+    mockRepo.updatePhoto.mockResolvedValue(updated)
+    const buffer = Buffer.from('fake-image')
+    const result = await service.uploadPhoto('coach-id', buffer)
+    expect(result.photoUrl).toBe('https://res.cloudinary.com/test/image/upload/test.jpg')
+    expect(mockRepo.updatePhoto).toHaveBeenCalledWith(
+      'coach-id',
+      'https://res.cloudinary.com/test/image/upload/test.jpg'
+    )
+  })
+})
