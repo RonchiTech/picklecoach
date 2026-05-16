@@ -6,6 +6,7 @@ const mockUser = {
   _id: { toString: () => '507f1f77bcf86cd799439011' },
   name: 'Coach Ron',
   email: 'ron@test.com',
+  phone: '+63 912 345 6789',
   role: 'coach' as const,
   subscriptionTier: 'starter' as const,
   subscriptionStatus: 'trial' as const,
@@ -17,6 +18,8 @@ const mockRepo: jest.Mocked<IAuthRepository> = {
   findById: jest.fn(),
   create: jest.fn(),
   emailExists: jest.fn(),
+  update: jest.fn(),
+  updatePassword: jest.fn(),
 }
 
 let service: AuthService
@@ -53,7 +56,7 @@ describe('AuthService.register', () => {
     })
     expect(result.token).toBeDefined()
     expect(result.user.email).toBe('ron@test.com')
-    expect((result.user as Record<string, unknown>).passwordHash).toBeUndefined()
+    expect((result.user as unknown as Record<string, unknown>).passwordHash).toBeUndefined()
   })
 })
 
@@ -95,6 +98,66 @@ describe('AuthService.getById', () => {
     mockRepo.findById.mockResolvedValue(mockUser)
     const result = await service.getById('507f1f77bcf86cd799439011')
     expect(result.email).toBe('ron@test.com')
-    expect((result as Record<string, unknown>).passwordHash).toBeUndefined()
+    expect((result as unknown as Record<string, unknown>).passwordHash).toBeUndefined()
+  })
+})
+
+describe('AuthService.updateProfile', () => {
+  it('calls repo.update with the given id and data', async () => {
+    const updated = { ...mockUser, name: 'New Name' }
+    mockRepo.update.mockResolvedValue(updated as unknown as IUser)
+    await service.updateProfile('507f1f77bcf86cd799439011', { name: 'New Name' })
+    expect(mockRepo.update).toHaveBeenCalledWith('507f1f77bcf86cd799439011', { name: 'New Name' })
+  })
+
+  it('returns the sanitized updated user', async () => {
+    const updated = { ...mockUser, name: 'New Name' }
+    mockRepo.update.mockResolvedValue(updated as unknown as IUser)
+    const result = await service.updateProfile('507f1f77bcf86cd799439011', { name: 'New Name' })
+    expect(result.name).toBe('New Name')
+    expect((result as unknown as Record<string, unknown>).passwordHash).toBeUndefined()
+  })
+
+  it('throws USER_NOT_FOUND when repo.update returns null', async () => {
+    mockRepo.update.mockResolvedValue(null)
+    await expect(
+      service.updateProfile('507f1f77bcf86cd799439011', { name: 'New Name' })
+    ).rejects.toMatchObject({ code: 'USER_NOT_FOUND', statusCode: 404 })
+  })
+})
+
+describe('AuthService.changePassword', () => {
+  it('throws INVALID_CREDENTIALS when current password is wrong', async () => {
+    mockRepo.findById.mockResolvedValue(mockUser)
+    ;(mockUser.comparePassword as jest.Mock).mockResolvedValue(false)
+    await expect(
+      service.changePassword('507f1f77bcf86cd799439011', {
+        currentPassword: 'wrong',
+        newPassword: 'newpass123',
+      })
+    ).rejects.toMatchObject({ code: 'INVALID_CREDENTIALS', statusCode: 401 })
+  })
+
+  it('throws USER_NOT_FOUND when user does not exist', async () => {
+    mockRepo.findById.mockResolvedValue(null)
+    await expect(
+      service.changePassword('unknown', { currentPassword: 'x', newPassword: 'newpass123' })
+    ).rejects.toMatchObject({ code: 'USER_NOT_FOUND', statusCode: 404 })
+  })
+
+  it('hashes new password and calls repo.updatePassword', async () => {
+    mockRepo.findById.mockResolvedValue(mockUser)
+    ;(mockUser.comparePassword as jest.Mock).mockResolvedValue(true)
+    mockRepo.updatePassword.mockResolvedValue(undefined)
+    await service.changePassword('507f1f77bcf86cd799439011', {
+      currentPassword: 'currentpass',
+      newPassword: 'newpass123',
+    })
+    expect(mockRepo.updatePassword).toHaveBeenCalledWith(
+      '507f1f77bcf86cd799439011',
+      expect.any(String)
+    )
+    const hashArg = mockRepo.updatePassword.mock.calls[0][1]
+    expect(hashArg).not.toBe('newpass123')
   })
 })
