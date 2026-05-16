@@ -78,19 +78,23 @@ export interface PublicPayment {
 
 All routes require `authenticate` middleware.
 
-| Method | Path | Description                                      |
-| ------ | ---- | ------------------------------------------------ |
-| GET    | /    | List all payments for coach, sorted newest first |
-| POST   | /    | Create payment record                            |
-| GET    | /:id | Get single payment                               |
-| PATCH  | /:id | Update amount, status, method, notes             |
-| DELETE | /:id | Delete payment record                            |
+| Method | Path | Description                                                              |
+| ------ | ---- | ------------------------------------------------------------------------ |
+| GET    | /    | List payments for coach, sorted newest first. Accepts `?page=1&limit=20` |
+| POST   | /    | Create payment record                                                    |
+| GET    | /:id | Get single payment                                                       |
+| PATCH  | /:id | Update amount, status, method, notes                                     |
+| DELETE | /:id | Delete payment record                                                    |
 
 ### Repository (`session.repository.ts` pattern)
 
 ```ts
 interface IPaymentRepository {
-  findAllByCoach(coachId: string): Promise<IPayment[]>
+  findAllByCoach(
+    coachId: string,
+    page: number,
+    limit: number
+  ): Promise<{ payments: IPayment[]; total: number }>
   findById(id: string, coachId: string): Promise<IPayment | null>
   create(data: CreateData): Promise<IPayment>
   update(id: string, coachId: string, data: UpdateData): Promise<IPayment | null>
@@ -107,7 +111,7 @@ interface IPaymentRepository {
 
 ### Service
 
-- `list(coachId)` — delegates to repo
+- `list(coachId, page, limit)` — delegates to repo; returns `{ payments, total, page, limit }`
 - `getOne(coachId, id)` — 404 if not found
 - `create(coachId, input)` — sets `paidAt: new Date()` when `status === 'paid'`
 - `update(coachId, id, input)` — 404 if not found; sets/clears `paidAt` based on new status
@@ -131,8 +135,10 @@ Since `DashboardService` currently directly uses Mongoose models (not a reposito
 
 ### `PaymentList` (client component)
 
-- Flat list, sorted newest first
+- Flat list, sorted newest first, 20 records per page
 - Each row: student name, method, date, amount, status pill (paid=green, unpaid=red, partial=yellow), Edit link
+- Pagination controls at the bottom: Previous / Next buttons, current page indicator
+- Page is driven by a `?page=N` query param — server component reads it and passes to `serverApiFetch`
 - "No payments yet" empty state with link to `/dashboard/payments/new`
 
 ### `PaymentForm` (client component)
@@ -151,7 +157,7 @@ On submit: `POST /api/v1/payments` (create) or `PATCH /api/v1/payments/:id` (edi
 
 Three-layer TDD (red → green → commit):
 
-- `payment.repository.test.ts` — real MongoDB (`picklecoach_test`): create, findAllByCoach, findById scoped to coachId, sumUnpaidByCoach aggregation
+- `payment.repository.test.ts` — real MongoDB (`picklecoach_test`): create, findAllByCoach with pagination (returns correct page + total), findById scoped to coachId, sumUnpaidByCoach aggregation
 - `payment.service.test.ts` — mocked `IPaymentRepository`: paidAt auto-set on paid status, 404 on not found
 - `payment.integration.test.ts` — Supertest: 401 without token, CRUD flow, cross-coach 404, aggregation result
 - `dashboard.service.test.ts` — updated to mock `Payment.aggregate`
@@ -161,4 +167,3 @@ Three-layer TDD (red → green → commit):
 - Payment reports / monthly revenue summaries (Pro tier)
 - Automated reminders (Pro tier)
 - Filtering/sorting in the UI (can be added later)
-- Pagination (coaches won't have enough records to need it at MVP)
