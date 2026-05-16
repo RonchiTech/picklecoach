@@ -51,3 +51,16 @@ export interface PublicStudent {
   createdAt: string
   updatedAt: string
 }
+
+export interface PublicSession {
+  _id: string
+  coachId: string
+  studentIds: string[]
+  type: SessionType
+  status: SessionStatus
+  scheduledAt: string
+  durationMinutes: number
+  notes?: string
+  createdAt: string
+  updatedAt: string
+}
