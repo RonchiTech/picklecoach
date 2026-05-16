@@ -1,5 +1,7 @@
+import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { resend } from '../../config/resend'
 import type {
   RegisterInput,
   LoginInput,
@@ -79,6 +81,38 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(input.newPassword, 12)
     await this.repo.updatePassword(id, passwordHash)
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const user = await this.repo.findByEmail(email)
+    if (!user) return
+
+    const token = crypto.randomBytes(32).toString('hex')
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000)
+
+    await this.repo.setResetToken(user._id.toString(), tokenHash, expiresAt)
+
+    const resetUrl = `${env.CLIENT_URL}/reset-password?token=${token}`
+    await resend.emails.send({
+      from: env.RESEND_FROM_EMAIL,
+      to: email,
+      subject: 'Reset your PickleCoach password',
+      html: `<p>Hi ${user.name},</p><p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p><p>If you did not request this, ignore this email.</p>`,
+    })
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+    const user = await this.repo.findByResetToken(tokenHash)
+
+    if (!user || !user.resetPasswordExpiresAt || user.resetPasswordExpiresAt < new Date()) {
+      throw createError('Invalid or expired reset token', 400, 'INVALID_RESET_TOKEN')
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12)
+    await this.repo.updatePassword(user._id.toString(), passwordHash)
+    await this.repo.clearResetToken(user._id.toString())
   }
 
   private signToken(user: IUser): string {

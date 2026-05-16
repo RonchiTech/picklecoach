@@ -1,3 +1,11 @@
+jest.mock('../../config/resend', () => ({
+  resend: {
+    emails: {
+      send: jest.fn().mockResolvedValue({ id: 'mock-email-id' }),
+    },
+  },
+}))
+
 import { AuthService } from './auth.service'
 import type { IAuthRepository } from './auth.repository'
 import type { IUser } from './auth.model'
@@ -20,6 +28,9 @@ const mockRepo: jest.Mocked<IAuthRepository> = {
   emailExists: jest.fn(),
   update: jest.fn(),
   updatePassword: jest.fn(),
+  setResetToken: jest.fn(),
+  findByResetToken: jest.fn(),
+  clearResetToken: jest.fn(),
 }
 
 const mockOnRegister = jest.fn()
@@ -169,5 +180,66 @@ describe('AuthService.changePassword', () => {
     )
     const hashArg = mockRepo.updatePassword.mock.calls[0][1]
     expect(hashArg).not.toBe('newpass123')
+  })
+})
+
+describe('AuthService.forgotPassword', () => {
+  it('returns silently when email does not exist', async () => {
+    mockRepo.findByEmail.mockResolvedValue(null)
+    await expect(service.forgotPassword('ghost@test.com')).resolves.not.toThrow()
+    expect(mockRepo.setResetToken).not.toHaveBeenCalled()
+  })
+
+  it('sets a reset token and sends an email when user exists', async () => {
+    mockRepo.findByEmail.mockResolvedValue(mockUser)
+    mockRepo.setResetToken.mockResolvedValue(undefined)
+    await service.forgotPassword('ron@test.com')
+    expect(mockRepo.setResetToken).toHaveBeenCalledWith(
+      '507f1f77bcf86cd799439011',
+      expect.any(String),
+      expect.any(Date)
+    )
+  })
+})
+
+describe('AuthService.resetPassword', () => {
+  it('throws INVALID_RESET_TOKEN when token does not match any user', async () => {
+    mockRepo.findByResetToken.mockResolvedValue(null)
+    await expect(service.resetPassword('bad-token', 'newpass123')).rejects.toMatchObject({
+      code: 'INVALID_RESET_TOKEN',
+      statusCode: 400,
+    })
+  })
+
+  it('throws INVALID_RESET_TOKEN when token is expired', async () => {
+    const expiredUser = {
+      ...mockUser,
+      resetPasswordToken: 'somehash',
+      resetPasswordExpiresAt: new Date(Date.now() - 1000),
+    }
+    mockRepo.findByResetToken.mockResolvedValue(expiredUser as unknown as IUser)
+    await expect(service.resetPassword('some-token', 'newpass123')).rejects.toMatchObject({
+      code: 'INVALID_RESET_TOKEN',
+      statusCode: 400,
+    })
+  })
+
+  it('updates password and clears token on success', async () => {
+    const validUser = {
+      ...mockUser,
+      resetPasswordToken: 'somehash',
+      resetPasswordExpiresAt: new Date(Date.now() + 3600_000),
+    }
+    mockRepo.findByResetToken.mockResolvedValue(validUser as unknown as IUser)
+    mockRepo.updatePassword.mockResolvedValue(undefined)
+    mockRepo.clearResetToken.mockResolvedValue(undefined)
+    await service.resetPassword('some-token', 'newpass123')
+    expect(mockRepo.updatePassword).toHaveBeenCalledWith(
+      '507f1f77bcf86cd799439011',
+      expect.any(String)
+    )
+    const hashArg = mockRepo.updatePassword.mock.calls[0][1]
+    expect(hashArg).not.toBe('newpass123')
+    expect(mockRepo.clearResetToken).toHaveBeenCalledWith('507f1f77bcf86cd799439011')
   })
 })
