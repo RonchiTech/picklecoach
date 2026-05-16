@@ -78,3 +78,13 @@ export interface PublicPayment {
   createdAt: string
   updatedAt: string
 }
+
+export interface PublicUser {
+  _id: string
+  name: string
+  email: string
+  phone?: string
+  role: UserRole
+  subscriptionTier: SubscriptionTier
+  subscriptionStatus: SubscriptionStatus
+}
