@@ -64,3 +64,17 @@ export interface PublicSession {
   createdAt: string
   updatedAt: string
 }
+
+export interface PublicPayment {
+  _id: string
+  coachId: string
+  studentId: string
+  sessionId?: string
+  amount: number
+  method: PaymentMethod
+  status: PaymentStatus
+  notes?: string
+  paidAt?: string
+  createdAt: string
+  updatedAt: string
+}
