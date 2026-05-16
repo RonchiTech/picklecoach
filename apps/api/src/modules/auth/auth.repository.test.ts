@@ -110,3 +110,57 @@ describe('UserRepository.updatePassword', () => {
     expect(found?.passwordHash).toBe('new-hash')
   })
 })
+
+describe('UserRepository.setResetToken', () => {
+  it('stores tokenHash and expiresAt on the user', async () => {
+    const user = await repo.create({
+      name: 'Coach Ron',
+      email: 'ron@test.com',
+      passwordHash: 'hash',
+    })
+    const expiresAt = new Date(Date.now() + 3600_000)
+    await repo.setResetToken(user._id.toString(), 'abc123hash', expiresAt)
+    const updated = await User.findById(user._id).select(
+      '+resetPasswordToken +resetPasswordExpiresAt'
+    )
+    expect(updated?.resetPasswordToken).toBe('abc123hash')
+    expect(updated?.resetPasswordExpiresAt?.getTime()).toBeCloseTo(expiresAt.getTime(), -3)
+  })
+})
+
+describe('UserRepository.findByResetToken', () => {
+  it('returns null when no user has that token hash', async () => {
+    const result = await repo.findByResetToken('nonexistent-hash')
+    expect(result).toBeNull()
+  })
+
+  it('returns the user when token hash matches', async () => {
+    const user = await repo.create({
+      name: 'Coach Ron',
+      email: 'ron@test.com',
+      passwordHash: 'hash',
+    })
+    await repo.setResetToken(user._id.toString(), 'myhash', new Date(Date.now() + 3600_000))
+    const found = await repo.findByResetToken('myhash')
+    expect(found?.email).toBe('ron@test.com')
+    expect(found?.resetPasswordToken).toBe('myhash')
+    expect(found?.resetPasswordExpiresAt).toBeDefined()
+  })
+})
+
+describe('UserRepository.clearResetToken', () => {
+  it('removes resetPasswordToken and resetPasswordExpiresAt from the user', async () => {
+    const user = await repo.create({
+      name: 'Coach Ron',
+      email: 'ron@test.com',
+      passwordHash: 'hash',
+    })
+    await repo.setResetToken(user._id.toString(), 'myhash', new Date(Date.now() + 3600_000))
+    await repo.clearResetToken(user._id.toString())
+    const updated = await User.findById(user._id).select(
+      '+resetPasswordToken +resetPasswordExpiresAt'
+    )
+    expect(updated?.resetPasswordToken).toBeUndefined()
+    expect(updated?.resetPasswordExpiresAt).toBeUndefined()
+  })
+})

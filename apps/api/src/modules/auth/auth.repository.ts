@@ -12,6 +12,9 @@ export interface IAuthRepository {
   emailExists(email: string): Promise<boolean>
   update(id: string, data: { name?: string; phone?: string }): Promise<IUser | null>
   updatePassword(id: string, passwordHash: string): Promise<void>
+  setResetToken(id: string, tokenHash: string, expiresAt: Date): Promise<void>
+  findByResetToken(tokenHash: string): Promise<IUser | null>
+  clearResetToken(id: string): Promise<void>
 }
 
 export class UserRepository implements IAuthRepository {
@@ -43,5 +46,25 @@ export class UserRepository implements IAuthRepository {
 
   async updatePassword(id: string, passwordHash: string): Promise<void> {
     await User.updateOne({ _id: id }, { $set: { passwordHash } })
+  }
+
+  async setResetToken(id: string, tokenHash: string, expiresAt: Date): Promise<void> {
+    await User.updateOne(
+      { _id: id },
+      { $set: { resetPasswordToken: tokenHash, resetPasswordExpiresAt: expiresAt } }
+    )
+  }
+
+  async findByResetToken(tokenHash: string): Promise<IUser | null> {
+    return User.findOne({ resetPasswordToken: tokenHash }).select(
+      '+resetPasswordToken +resetPasswordExpiresAt'
+    )
+  }
+
+  async clearResetToken(id: string): Promise<void> {
+    await User.updateOne(
+      { _id: id },
+      { $unset: { resetPasswordToken: '', resetPasswordExpiresAt: '' } }
+    )
   }
 }
