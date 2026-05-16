@@ -81,3 +81,32 @@ describe('UserRepository.findById', () => {
     expect(user?.email).toBe('ron@test.com')
   })
 })
+
+describe('UserRepository.update', () => {
+  it('updates name and returns the new document', async () => {
+    const created = await seed()
+    const updated = await repo.update(created._id.toString(), { name: 'Coach Updated' })
+    expect(updated?.name).toBe('Coach Updated')
+  })
+
+  it('updates phone and returns the new document', async () => {
+    const created = await seed()
+    const updated = await repo.update(created._id.toString(), { phone: '+63 912 345 6789' })
+    expect(updated?.phone).toBe('+63 912 345 6789')
+  })
+
+  it('returns null for an unknown id', async () => {
+    const fakeId = new mongoose.Types.ObjectId().toString()
+    const result = await repo.update(fakeId, { name: 'Ghost' })
+    expect(result).toBeNull()
+  })
+})
+
+describe('UserRepository.updatePassword', () => {
+  it('sets a new passwordHash on the user', async () => {
+    const created = await seed()
+    await repo.updatePassword(created._id.toString(), 'new-hash')
+    const found = await User.findById(created._id)
+    expect(found?.passwordHash).toBe('new-hash')
+  })
+})
