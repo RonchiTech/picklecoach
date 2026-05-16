@@ -42,7 +42,7 @@ export class PaymentRepository implements IPaymentRepository {
   ): Promise<{ payments: IPayment[]; total: number }> {
     const skip = (page - 1) * limit
     const [payments, total] = await Promise.all([
-      Payment.find({ coachId }).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Payment.find({ coachId }).sort({ createdAt: -1, _id: -1 }).skip(skip).limit(limit),
       Payment.countDocuments({ coachId }),
     ])
     return { payments, total }
