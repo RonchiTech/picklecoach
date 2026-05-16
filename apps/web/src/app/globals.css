@@ -9,6 +9,8 @@
   --color-text-primary: #FFFFFF;
   --color-text-secondary: #CCCCCC;
   --color-error: #FF6B6B;
+  --color-success: #22C55E;
+  --color-warning: #EAB308;
 
   --font-family-outfit: var(--font-outfit), sans-serif;
   --font-family-dm: var(--font-dm-sans), sans-serif;
