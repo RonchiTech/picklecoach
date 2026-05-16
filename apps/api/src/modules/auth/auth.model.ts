@@ -16,6 +16,8 @@ export interface IUser extends Document {
   city?: string
   bio?: string
   profilePhoto?: string
+  resetPasswordToken?: string
+  resetPasswordExpiresAt?: Date
   comparePassword(candidate: string): Promise<boolean>
 }
 
@@ -40,6 +42,8 @@ const userSchema = new Schema<IUser>(
     city: { type: String },
     bio: { type: String },
     profilePhoto: { type: String },
+    resetPasswordToken: { type: String, select: false },
+    resetPasswordExpiresAt: { type: Date, select: false },
   },
   { timestamps: true }
 )
