@@ -110,3 +110,17 @@ export interface PublicCoachProfile {
   createdAt: string
   updatedAt: string
 }
+
+export interface CoachDirectoryQuery {
+  specialization?: string
+  city?: string
+  sessionType?: string
+  page?: number
+}
+
+export interface CoachDirectoryResult {
+  coaches: PublicCoachProfile[]
+  total: number
+  page: number
+  totalPages: number
+}
