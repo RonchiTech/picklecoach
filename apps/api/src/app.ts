@@ -7,6 +7,7 @@ import { authRoutes } from './modules/auth/auth.routes'
 import { dashboardRoutes } from './modules/dashboard/dashboard.routes'
 import { studentRoutes } from './modules/student/student.routes'
 import { sessionRoutes } from './modules/session/session.routes'
+import { paymentRoutes } from './modules/payment/payment.routes'
 import { env } from './config/env'
 
 export function createApp() {
@@ -24,6 +25,7 @@ export function createApp() {
   app.use('/api/v1/dashboard', dashboardRoutes)
   app.use('/api/v1/students', studentRoutes)
   app.use('/api/v1/sessions', sessionRoutes)
+  app.use('/api/v1/payments', paymentRoutes)
 
   app.use(notFoundMiddleware)
   app.use(errorMiddleware)
