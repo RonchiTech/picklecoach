@@ -88,3 +88,25 @@ export interface PublicUser {
   subscriptionTier: SubscriptionTier
   subscriptionStatus: SubscriptionStatus
 }
+
+export interface PublicCoachProfile {
+  _id: string
+  coachId: string
+  slug: string
+  isPublic: boolean
+  displayName: string
+  bio?: string
+  photoUrl?: string
+  city?: string
+  specializations: string[]
+  sessionTypes: SessionType[]
+  privateRate?: number
+  groupRate?: number
+  ratesNote?: string
+  contactEmail?: string
+  contactPhone?: string
+  showContactInfo: boolean
+  totalViews: number
+  createdAt: string
+  updatedAt: string
+}
