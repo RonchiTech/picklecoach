@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, CalendarDays, CreditCard, UserCircle } from 'lucide-react'
+import { LayoutDashboard, Users, CalendarDays, CreditCard, Globe, UserCircle } from 'lucide-react'
 import type { SubscriptionTier } from '@picklecoach/shared'
 import { apiFetch } from '@/lib/api'
 import { NavItem } from './NavItem'
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: '/dashboard/students', label: 'Students', Icon: Users },
   { href: '/dashboard/sessions', label: 'Sessions', Icon: CalendarDays },
   { href: '/dashboard/payments', label: 'Payments', Icon: CreditCard },
+  { href: '/dashboard/public-profile', label: 'Public Profile', Icon: Globe },
   { href: '/dashboard/profile', label: 'Profile', Icon: UserCircle },
 ]
 
