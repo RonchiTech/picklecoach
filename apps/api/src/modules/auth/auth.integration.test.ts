@@ -123,3 +123,81 @@ describe('POST /api/v1/auth/logout', () => {
     expect(tokenCookie).toMatch(/Expires=Thu, 01 Jan 1970/)
   })
 })
+
+const registerAndLogin = async () => {
+  await request(app)
+    .post('/api/v1/auth/register')
+    .send({ name: 'Coach Ron', email: 'ron@test.com', password: 'password123' })
+  const loginRes = await request(app)
+    .post('/api/v1/auth/login')
+    .send({ email: 'ron@test.com', password: 'password123' })
+  return loginRes.headers['set-cookie'] as unknown as string[]
+}
+
+describe('PATCH /api/v1/auth/profile', () => {
+  it('returns 401 without a token', async () => {
+    const res = await request(app).patch('/api/v1/auth/profile').send({ name: 'New Name' })
+    expect(res.status).toBe(401)
+  })
+
+  it('updates name and returns updated user', async () => {
+    const cookie = await registerAndLogin()
+    const res = await request(app)
+      .patch('/api/v1/auth/profile')
+      .set('Cookie', cookie)
+      .send({ name: 'Coach Updated' })
+    expect(res.status).toBe(200)
+    expect(res.body.data.name).toBe('Coach Updated')
+  })
+
+  it('updates phone and returns updated user', async () => {
+    const cookie = await registerAndLogin()
+    const res = await request(app)
+      .patch('/api/v1/auth/profile')
+      .set('Cookie', cookie)
+      .send({ phone: '+63 912 345 6789' })
+    expect(res.status).toBe(200)
+    expect(res.body.data.phone).toBe('+63 912 345 6789')
+  })
+})
+
+describe('PATCH /api/v1/auth/password', () => {
+  it('returns 401 without a token', async () => {
+    const res = await request(app)
+      .patch('/api/v1/auth/password')
+      .send({ currentPassword: 'password123', newPassword: 'newpassword123' })
+    expect(res.status).toBe(401)
+  })
+
+  it('returns 401 INVALID_CREDENTIALS when current password is wrong', async () => {
+    const cookie = await registerAndLogin()
+    const res = await request(app)
+      .patch('/api/v1/auth/password')
+      .set('Cookie', cookie)
+      .send({ currentPassword: 'wrongpassword', newPassword: 'newpassword123' })
+    expect(res.status).toBe(401)
+    expect(res.body.error.code).toBe('INVALID_CREDENTIALS')
+  })
+
+  it('updates password successfully with correct current password', async () => {
+    const cookie = await registerAndLogin()
+    const res = await request(app)
+      .patch('/api/v1/auth/password')
+      .set('Cookie', cookie)
+      .send({ currentPassword: 'password123', newPassword: 'newpassword123' })
+    expect(res.status).toBe(200)
+    expect(res.body.data.message).toBe('Password updated')
+  })
+
+  it('can login with new password after update', async () => {
+    const cookie = await registerAndLogin()
+    await request(app)
+      .patch('/api/v1/auth/password')
+      .set('Cookie', cookie)
+      .send({ currentPassword: 'password123', newPassword: 'newpassword123' })
+    const loginRes = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: 'ron@test.com', password: 'newpassword123' })
+    expect(loginRes.status).toBe(200)
+  })
+})

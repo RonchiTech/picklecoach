@@ -1,5 +1,10 @@
 import type { Request, Response, NextFunction } from 'express'
-import { registerSchema, loginSchema } from '@picklecoach/shared'
+import {
+  registerSchema,
+  loginSchema,
+  updateProfileSchema,
+  updatePasswordSchema,
+} from '@picklecoach/shared'
 import { AuthService } from './auth.service'
 import { env } from '../../config/env'
 
@@ -44,6 +49,26 @@ export class AuthController {
     try {
       const user = await this.service.getById(req.user!.userId)
       res.json({ success: true, data: user })
+    } catch (err) {
+      next(err)
+    }
+  }
+
+  updateProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const input = updateProfileSchema.parse(req.body)
+      const user = await this.service.updateProfile(req.user!.userId, input)
+      res.json({ success: true, data: user })
+    } catch (err) {
+      next(err)
+    }
+  }
+
+  changePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const input = updatePasswordSchema.parse(req.body)
+      await this.service.changePassword(req.user!.userId, input)
+      res.json({ success: true, data: { message: 'Password updated' } })
     } catch (err) {
       next(err)
     }
