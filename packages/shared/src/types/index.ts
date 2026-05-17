@@ -124,3 +124,12 @@ export interface CoachDirectoryResult {
   page: number
   totalPages: number
 }
+
+export interface SubscriptionInfo {
+  tier: SubscriptionTier
+  status: SubscriptionStatus
+  trialEndsAt: string // ISO date — natural end of trial period
+  lockedAt: string // trialEndsAt + 7 days — hard lock date
+  daysRemaining: number // days until trialEndsAt; 0 if already past
+  isLocked: boolean // true when now > lockedAt
+}
