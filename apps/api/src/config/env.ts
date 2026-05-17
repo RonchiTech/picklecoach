@@ -13,7 +13,7 @@ const envSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string().default(''),
   CLOUDINARY_API_KEY: z.string().default(''),
   CLOUDINARY_API_SECRET: z.string().default(''),
-  RESEND_API_KEY: z.string().default(''),
+  RESEND_API_KEY: z.string().default('re_placeholder'),
   RESEND_FROM_EMAIL: z.string().default('noreply@picklecoach.com'),
 })
 

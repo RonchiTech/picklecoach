@@ -1,3 +1,11 @@
+jest.mock('../../config/resend', () => ({
+  resend: {
+    emails: {
+      send: jest.fn().mockResolvedValue({ id: 'mock-email-id' }),
+    },
+  },
+}))
+
 import request from 'supertest'
 import mongoose from 'mongoose'
 import { createApp } from '../../app'
@@ -199,5 +207,88 @@ describe('PATCH /api/v1/auth/password', () => {
       .post('/api/v1/auth/login')
       .send({ email: 'ron@test.com', password: 'newpassword123' })
     expect(loginRes.status).toBe(200)
+  })
+})
+
+describe('POST /api/v1/auth/forgot-password', () => {
+  it('returns 200 and generic message for any email (registered or not)', async () => {
+    const res = await request(app)
+      .post('/api/v1/auth/forgot-password')
+      .send({ email: 'ghost@test.com' })
+    expect(res.status).toBe(200)
+    expect(res.body.success).toBe(true)
+  })
+
+  it('returns 200 and stores a reset token when email is registered', async () => {
+    await request(app)
+      .post('/api/v1/auth/register')
+      .send({ name: 'Coach Ron', email: 'ron@test.com', password: 'password123' })
+
+    const res = await request(app)
+      .post('/api/v1/auth/forgot-password')
+      .send({ email: 'ron@test.com' })
+
+    expect(res.status).toBe(200)
+    const user = await User.findOne({ email: 'ron@test.com' }).select(
+      '+resetPasswordToken +resetPasswordExpiresAt'
+    )
+    expect(user?.resetPasswordToken).toBeDefined()
+    expect(user?.resetPasswordExpiresAt).toBeDefined()
+  })
+
+  it('returns 400 VALIDATION_ERROR for invalid email', async () => {
+    const res = await request(app)
+      .post('/api/v1/auth/forgot-password')
+      .send({ email: 'not-an-email' })
+    expect(res.status).toBe(400)
+    expect(res.body.error.code).toBe('VALIDATION_ERROR')
+  })
+})
+
+describe('POST /api/v1/auth/reset-password', () => {
+  it('returns 400 INVALID_RESET_TOKEN for an unknown token', async () => {
+    const res = await request(app)
+      .post('/api/v1/auth/reset-password')
+      .send({ token: 'deadbeef'.repeat(8), newPassword: 'newpass123' })
+    expect(res.status).toBe(400)
+    expect(res.body.error.code).toBe('INVALID_RESET_TOKEN')
+  })
+
+  it('resets the password and clears the token on a valid token', async () => {
+    await request(app)
+      .post('/api/v1/auth/register')
+      .send({ name: 'Coach Ron', email: 'ron@test.com', password: 'password123' })
+    await request(app).post('/api/v1/auth/forgot-password').send({ email: 'ron@test.com' })
+
+    const { resend: mockResend } = jest.requireMock('../../config/resend') as {
+      resend: { emails: { send: jest.Mock } }
+    }
+    const emailHtml: string = mockResend.emails.send.mock.calls[0][0].html
+    const tokenMatch = emailHtml.match(/token=([a-f0-9]+)/)
+    expect(tokenMatch).not.toBeNull()
+    const rawToken = tokenMatch![1]
+
+    const resetRes = await request(app)
+      .post('/api/v1/auth/reset-password')
+      .send({ token: rawToken, newPassword: 'newsecurepass123' })
+    expect(resetRes.status).toBe(200)
+
+    const clearedUser = await User.findOne({ email: 'ron@test.com' }).select(
+      '+resetPasswordToken +resetPasswordExpiresAt'
+    )
+    expect(clearedUser?.resetPasswordToken).toBeUndefined()
+
+    const loginRes = await request(app)
+      .post('/api/v1/auth/login')
+      .send({ email: 'ron@test.com', password: 'newsecurepass123' })
+    expect(loginRes.status).toBe(200)
+  })
+
+  it('returns 400 VALIDATION_ERROR when newPassword is too short', async () => {
+    const res = await request(app)
+      .post('/api/v1/auth/reset-password')
+      .send({ token: 'sometoken', newPassword: 'short' })
+    expect(res.status).toBe(400)
+    expect(res.body.error.code).toBe('VALIDATION_ERROR')
   })
 })
