@@ -38,6 +38,27 @@ export function requireRole(...roles: UserRole[]) {
   }
 }
 
+export function requireProOrTrial(req: Request, _res: Response, next: NextFunction): void {
+  const userId = req.user?.userId
+  if (!userId) return next(createError('Not authenticated', 401, 'NOT_AUTHENTICATED'))
+
+  User.findById(userId)
+    .select('subscriptionTier subscriptionStatus')
+    .then((user) => {
+      if (!user) return next(createError('User not found', 404, 'USER_NOT_FOUND'))
+      const { subscriptionTier, subscriptionStatus } = user
+      if (
+        subscriptionTier === 'pro' ||
+        subscriptionTier === 'team' ||
+        subscriptionStatus === 'trial'
+      ) {
+        return next()
+      }
+      return next(createError('This feature requires a Pro subscription', 403, 'TIER_REQUIRED'))
+    })
+    .catch(next)
+}
+
 export function requireActive(req: Request, _res: Response, next: NextFunction): void {
   const userId = req.user?.userId
   if (!userId) return next(createError('Not authenticated', 401, 'NOT_AUTHENTICATED'))
