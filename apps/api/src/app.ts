@@ -15,7 +15,14 @@ import { env } from './config/env'
 export function createApp() {
   const app = express()
 
-  app.use(cors({ origin: env.CLIENT_URL, credentials: true }))
+  const allowedOrigin =
+    env.NODE_ENV === 'development'
+      ? (origin: string | undefined, cb: (e: Error | null, allow?: boolean) => void) => {
+          if (!origin || /^http:\/\/localhost:\d+$/.test(origin)) cb(null, true)
+          else cb(new Error('Not allowed by CORS'))
+        }
+      : env.CLIENT_URL
+  app.use(cors({ origin: allowedOrigin, credentials: true }))
   app.use(express.json())
   app.use(cookieParser())
 
