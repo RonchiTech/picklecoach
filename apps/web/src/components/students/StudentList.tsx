@@ -69,7 +69,12 @@ export function StudentList({ students }: StudentListProps) {
               className={`border-b border-border last:border-0 ${i % 2 === 0 ? '' : 'bg-surface/50'}`}
             >
               <td className="px-4 py-3">
-                <p className="text-sm font-medium text-text-primary">{student.name}</p>
+                <a
+                  href={`/dashboard/students/${student._id}`}
+                  className="text-sm font-medium text-text-primary transition-colors hover:text-accent"
+                >
+                  {student.name}
+                </a>
                 {student.notes && (
                   <p className="mt-0.5 text-xs text-muted line-clamp-1">{student.notes}</p>
                 )}
