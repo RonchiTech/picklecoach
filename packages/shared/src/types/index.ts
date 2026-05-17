@@ -145,3 +145,24 @@ export interface PublicProgressEntry {
   createdAt: string
   updatedAt: string
 }
+
+export type DiscountType = 'percentage' | 'fixed'
+
+export interface PublicPromotion {
+  _id: string
+  code: string
+  discountType: DiscountType
+  discountValue: number
+  applicableTiers: SubscriptionTier[]
+  expiresAt?: string
+  maxRedemptions?: number
+  currentRedemptions: number
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApplyPromoResult {
+  tier: SubscriptionTier
+  discountApplied: number
+}
