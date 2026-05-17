@@ -4,6 +4,7 @@ import type { UserRole } from '@picklecoach/shared'
 import { env } from '../config/env'
 import { createError } from './error.middleware'
 import type { JwtPayload } from '../modules/auth/auth.service'
+import { User } from '../modules/auth/auth.model'
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -13,6 +14,8 @@ declare global {
     }
   }
 }
+
+const GRACE_MS = 7 * 24 * 60 * 60 * 1000
 
 export function authenticate(req: Request, _res: Response, next: NextFunction): void {
   const token = req.cookies?.token as string | undefined
@@ -33,4 +36,27 @@ export function requireRole(...roles: UserRole[]) {
     if (!roles.includes(req.user.role)) return next(createError('Forbidden', 403, 'FORBIDDEN'))
     next()
   }
+}
+
+export function requireActive(req: Request, _res: Response, next: NextFunction): void {
+  const userId = req.user?.userId
+  if (!userId) return next(createError('Not authenticated', 401, 'NOT_AUTHENTICATED'))
+
+  User.findById(userId)
+    .select('trialEndsAt')
+    .then((user) => {
+      if (!user) return next(createError('User not found', 404, 'USER_NOT_FOUND'))
+      const lockedAt = new Date(user.trialEndsAt.getTime() + GRACE_MS)
+      if (new Date() > lockedAt) {
+        return next(
+          createError(
+            'Your trial period has ended. Please contact support to reactivate your account.',
+            403,
+            'ACCOUNT_LOCKED'
+          )
+        )
+      }
+      next()
+    })
+    .catch(next)
 }

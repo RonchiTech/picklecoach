@@ -11,6 +11,7 @@ import { paymentRoutes } from './modules/payment/payment.routes'
 import { coachProfileRoutes } from './modules/coach-profile/coach-profile.routes'
 import { publicCoachesRoutes } from './modules/public-coaches/public-coaches.routes'
 import { subscriptionRoutes } from './modules/subscription/subscription.routes'
+import { authenticate, requireActive } from './middleware/auth.middleware'
 import { env } from './config/env'
 
 export function createApp() {
@@ -33,11 +34,11 @@ export function createApp() {
 
   app.use('/api/v1/auth', authRoutes)
   app.use('/api/v1/subscriptions', subscriptionRoutes)
-  app.use('/api/v1/dashboard', dashboardRoutes)
-  app.use('/api/v1/students', studentRoutes)
-  app.use('/api/v1/sessions', sessionRoutes)
-  app.use('/api/v1/payments', paymentRoutes)
-  app.use('/api/v1/coach-profiles', coachProfileRoutes)
+  app.use('/api/v1/dashboard', authenticate, requireActive, dashboardRoutes)
+  app.use('/api/v1/students', authenticate, requireActive, studentRoutes)
+  app.use('/api/v1/sessions', authenticate, requireActive, sessionRoutes)
+  app.use('/api/v1/payments', authenticate, requireActive, paymentRoutes)
+  app.use('/api/v1/coach-profiles', authenticate, requireActive, coachProfileRoutes)
   app.use('/api/v1/coaches', publicCoachesRoutes)
 
   app.use(notFoundMiddleware)

@@ -30,6 +30,46 @@ async function registerAndLogin(email = 'sub@test.com') {
   return loginRes.headers['set-cookie'] as unknown as string[]
 }
 
+describe('requireActive middleware', () => {
+  it('allows access to /api/v1/students when trial is active', async () => {
+    const cookies = await registerAndLogin('active@test.com')
+    const res = await request(app).get('/api/v1/students').set('Cookie', cookies)
+    expect(res.status).toBe(200)
+  })
+
+  it('blocks /api/v1/students with 403 ACCOUNT_LOCKED when past grace period', async () => {
+    const cookies = await registerAndLogin('locked@test.com')
+    await User.updateOne(
+      { email: 'locked@test.com' },
+      { trialEndsAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000) }
+    )
+    const res = await request(app).get('/api/v1/students').set('Cookie', cookies)
+    expect(res.status).toBe(403)
+    expect(res.body.error.code).toBe('ACCOUNT_LOCKED')
+  })
+
+  it('allows access during 7-day grace period (3 days past trialEndsAt)', async () => {
+    const cookies = await registerAndLogin('grace@test.com')
+    await User.updateOne(
+      { email: 'grace@test.com' },
+      { trialEndsAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000) }
+    )
+    const res = await request(app).get('/api/v1/students').set('Cookie', cookies)
+    expect(res.status).toBe(200)
+  })
+
+  it('does NOT block /api/v1/subscriptions/me when locked (coach can read why)', async () => {
+    const cookies = await registerAndLogin('subcheck@test.com')
+    await User.updateOne(
+      { email: 'subcheck@test.com' },
+      { trialEndsAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000) }
+    )
+    const res = await request(app).get('/api/v1/subscriptions/me').set('Cookie', cookies)
+    expect(res.status).toBe(200)
+    expect(res.body.data.isLocked).toBe(true)
+  })
+})
+
 describe('GET /api/v1/subscriptions/me', () => {
   it('returns 401 without auth', async () => {
     const res = await request(app).get('/api/v1/subscriptions/me')
