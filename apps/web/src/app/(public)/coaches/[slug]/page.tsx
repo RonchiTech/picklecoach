@@ -22,95 +22,145 @@ export default async function CoachProfilePage({ params }: { params: Promise<{ s
   const coach = await publicApiFetch<PublicCoachProfile>(`/api/v1/coaches/${slug}`)
   if (!coach) notFound()
 
+  const hasRates = coach.privateRate || coach.groupRate
+
   return (
-    <main className="min-h-screen bg-base px-6 py-12">
-      <div className="mx-auto max-w-2xl">
+    <main className="min-h-screen bg-base px-6 py-10 sm:py-14">
+      <div className="mx-auto max-w-xl">
         <Link
           href="/coaches"
-          className="mb-8 inline-block text-sm text-text-secondary hover:text-accent"
+          className="mb-8 inline-block text-sm text-muted hover:text-white transition-colors"
         >
           ← Back to directory
         </Link>
 
-        <div className="rounded-xl border border-border bg-surface p-6">
-          <div className="mb-6 flex items-start gap-4">
+        {/* Hero: avatar + name + city + specialization pills */}
+        <div className="flex gap-5 items-start pb-6 border-b border-border mb-6">
+          <div className="shrink-0">
             {coach.photoUrl ? (
               <Image
                 src={coach.photoUrl}
                 alt={coach.displayName}
-                width={72}
-                height={72}
-                className="rounded-full object-cover"
+                width={80}
+                height={80}
+                className="rounded-full object-cover shadow-[0_0_0_3px_#C8F135,0_0_0_6px_#0C0C10,0_0_0_7px_#22222E]"
               />
             ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-border text-2xl font-bold text-text-secondary">
-                {coach.displayName.charAt(0)}
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-accent to-[#8fb020] flex items-center justify-center shadow-[0_0_0_3px_#C8F135,0_0_0_6px_#0C0C10,0_0_0_7px_#22222E]">
+                <span className="font-outfit text-[30px] font-black text-[#0C0C10] leading-none">
+                  {coach.displayName.charAt(0).toUpperCase()}
+                </span>
               </div>
             )}
-            <div>
-              <h1 className="font-outfit text-2xl font-bold text-text-primary">
-                {coach.displayName}
-              </h1>
-              {coach.city && <p className="text-text-secondary">{coach.city}</p>}
-              {coach.specializations.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {coach.specializations.map((s) => (
-                    <span
-                      key={s}
-                      className="rounded-full border border-border px-2 py-0.5 text-xs text-text-secondary"
-                    >
-                      {SPEC_LABELS[s] ?? s}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
-
-          {coach.bio && (
-            <div className="mb-6">
-              <h2 className="mb-2 text-sm font-semibold text-text-primary">About</h2>
-              <p className="text-sm text-text-secondary">{coach.bio}</p>
-            </div>
-          )}
-
-          {coach.sessionTypes.length > 0 && (
-            <div className="mb-6">
-              <h2 className="mb-2 text-sm font-semibold text-text-primary">Sessions</h2>
-              <div className="flex gap-2">
-                {coach.sessionTypes.map((t) => (
+          <div className="pt-1 min-w-0">
+            <h1 className="font-outfit text-2xl font-black tracking-tight text-white mb-1">
+              {coach.displayName}
+            </h1>
+            {coach.city && <p className="text-sm text-muted mb-3">📍 {coach.city}</p>}
+            {coach.specializations.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {coach.specializations.map((s) => (
                   <span
-                    key={t}
-                    className="rounded-full border border-border px-3 py-1 text-xs capitalize text-text-secondary"
+                    key={s}
+                    className="bg-accent text-[#0C0C10] text-[10px] font-bold px-2.5 py-0.5 rounded-md"
                   >
-                    {t}
+                    {SPEC_LABELS[s] ?? s}
                   </span>
                 ))}
               </div>
-              {(coach.privateRate || coach.groupRate) && (
-                <div className="mt-3 flex gap-6 text-sm text-text-secondary">
-                  {coach.privateRate && <span>Private: ₱{coach.privateRate}/hr</span>}
-                  {coach.groupRate && <span>Group: ₱{coach.groupRate}/hr</span>}
-                </div>
-              )}
-              {coach.ratesNote && (
-                <p className="mt-2 text-xs text-text-secondary">{coach.ratesNote}</p>
-              )}
-            </div>
-          )}
+            )}
+          </div>
+        </div>
 
-          {coach.showContactInfo && (coach.contactEmail || coach.contactPhone) && (
-            <div>
-              <h2 className="mb-2 text-sm font-semibold text-text-primary">Contact</h2>
+        {/* Bio */}
+        {coach.bio && (
+          <div className="pb-6 border-b border-border mb-6">
+            <p className="text-xs text-muted uppercase tracking-[0.1em] font-semibold mb-3">
+              About
+            </p>
+            <p className="text-sm text-text-secondary leading-relaxed">{coach.bio}</p>
+          </div>
+        )}
+
+        {/* Sessions & Rates */}
+        {coach.sessionTypes.length > 0 && (
+          <div className="pb-6 border-b border-border mb-6">
+            <p className="text-xs text-muted uppercase tracking-[0.1em] font-semibold mb-3">
+              Sessions & Rates
+            </p>
+            <div className="flex gap-2 mb-5">
+              {coach.sessionTypes.map((t) => (
+                <span
+                  key={t}
+                  className="border border-accent text-accent text-xs font-semibold px-3 py-1 rounded-md capitalize"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+            {hasRates && (
+              <div className="grid grid-cols-2 gap-4">
+                {coach.privateRate && (
+                  <div>
+                    <p className="text-[10px] text-muted uppercase tracking-[0.08em] mb-1">
+                      Private rate
+                    </p>
+                    <p className="font-outfit text-[26px] font-black text-accent leading-none">
+                      ₱{coach.privateRate.toLocaleString()}
+                      <span className="text-xs text-muted font-normal">/hr</span>
+                    </p>
+                  </div>
+                )}
+                {coach.groupRate && (
+                  <div>
+                    <p className="text-[10px] text-muted uppercase tracking-[0.08em] mb-1">
+                      Group rate
+                    </p>
+                    <p className="font-outfit text-[26px] font-black text-white leading-none">
+                      ₱{coach.groupRate.toLocaleString()}
+                      <span className="text-xs text-muted font-normal">/hr</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+            {coach.ratesNote && <p className="text-xs text-[#444] mt-3">{coach.ratesNote}</p>}
+          </div>
+        )}
+
+        {/* Contact card */}
+        {coach.showContactInfo && (coach.contactEmail || coach.contactPhone) && (
+          <div className="bg-surface border border-accent rounded-xl p-5">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-bold text-white">Interested in coaching?</p>
+              <span className="text-[10px] text-[#555]">◎ {coach.totalViews} views</span>
+            </div>
+            <p className="text-xs text-muted mb-4">
+              Reach out directly to ask about availability and rates.
+            </p>
+            <div className="flex flex-col gap-2">
               {coach.contactEmail && (
-                <p className="text-sm text-text-secondary">{coach.contactEmail}</p>
+                <a
+                  href={`mailto:${coach.contactEmail}`}
+                  className="flex items-center gap-3 bg-base rounded-lg px-4 py-2.5 hover:bg-white/5 transition-colors"
+                >
+                  <span className="text-accent text-sm">✉</span>
+                  <span className="text-sm text-accent">{coach.contactEmail}</span>
+                </a>
               )}
               {coach.contactPhone && (
-                <p className="text-sm text-text-secondary">{coach.contactPhone}</p>
+                <a
+                  href={`tel:${coach.contactPhone}`}
+                  className="flex items-center gap-3 bg-base rounded-lg px-4 py-2.5 hover:bg-white/5 transition-colors"
+                >
+                  <span className="text-muted text-sm">📱</span>
+                  <span className="text-sm text-text-secondary">{coach.contactPhone}</span>
+                </a>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </main>
   )
