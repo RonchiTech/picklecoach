@@ -55,8 +55,8 @@ describe('PromotionRepository.findAll', () => {
   })
 
   it('returns all promotions sorted by createdAt descending', async () => {
-    await seedPromo({ code: 'FIRST' })
-    await seedPromo({ code: 'SECOND' })
+    await seedPromo({ code: 'FIRST', createdAt: new Date('2026-01-01') })
+    await seedPromo({ code: 'SECOND', createdAt: new Date('2026-01-02') })
     const result = await promoRepo.findAll()
     expect(result).toHaveLength(2)
     expect(result[0].code).toBe('SECOND')
