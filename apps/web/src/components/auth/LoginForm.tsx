@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { apiFetch } from '@/lib/api'
 
 export function LoginForm() {
@@ -45,9 +46,14 @@ export function LoginForm() {
         />
       </div>
       <div className="flex flex-col gap-1">
-        <label htmlFor="password" className="text-sm font-medium text-text-secondary">
-          Password
-        </label>
+        <div className="flex items-center justify-between">
+          <label htmlFor="password" className="text-sm font-medium text-text-secondary">
+            Password
+          </label>
+          <Link href="/forgot-password" className="text-xs text-accent hover:underline">
+            Forgot password?
+          </Link>
+        </div>
         <input
           id="password"
           name="password"
