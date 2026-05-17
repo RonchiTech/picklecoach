@@ -166,3 +166,18 @@ export interface ApplyPromoResult {
   tier: SubscriptionTier
   discountApplied: number
 }
+
+export interface AdminCoach {
+  _id: string
+  name: string
+  email: string
+  subscriptionTier: SubscriptionTier
+  subscriptionStatus: SubscriptionStatus
+  createdAt: string
+}
+
+export interface AdminStats {
+  totalCoaches: number
+  activeTrials: number
+  activeSubscriptions: number
+}
