@@ -5,7 +5,7 @@ export default function LandingPage() {
   return (
     <div className="overflow-x-hidden">
       {/* ── HERO ─────────────────────────────────────────── */}
-      <section className="px-14 pt-[72px] grid grid-cols-[1fr_460px] gap-16 items-start max-w-[1200px] mx-auto">
+      <section className="px-5 sm:px-8 lg:px-14 pt-12 sm:pt-[72px] grid grid-cols-1 lg:grid-cols-[1fr_460px] gap-12 lg:gap-16 items-start max-w-[1200px] mx-auto">
         <div>
           <div className="inline-flex items-center gap-2 mb-6">
             <span className="w-[7px] h-[7px] bg-accent rounded-full" />
@@ -13,7 +13,7 @@ export default function LandingPage() {
               90-day free trial · No credit card
             </span>
           </div>
-          <h1 className="font-outfit text-[4rem] font-black leading-none tracking-[-0.03em] mb-5">
+          <h1 className="font-outfit text-[2.8rem] sm:text-[4rem] font-black leading-none tracking-[-0.03em] mb-5">
             Coaching,
             <br />
             not
@@ -24,7 +24,7 @@ export default function LandingPage() {
             PickleCoach helps Filipino pickleball coaches manage students, sessions, and payments —
             all in one place.
           </p>
-          <div className="flex gap-2.5 mb-3">
+          <div className="flex flex-wrap gap-2.5 mb-3">
             <Link
               href="/register"
               className="bg-accent text-[#0C0C10] font-black text-sm px-6 py-3.5 rounded-xl hover:opacity-90 transition-opacity"
@@ -49,14 +49,16 @@ export default function LandingPage() {
             Cancel anytime
           </p>
         </div>
-        <DashboardPreview />
+        <div className="hidden lg:block">
+          <DashboardPreview />
+        </div>
       </section>
 
       {/* ── STATS STRIP ──────────────────────────────────── */}
-      <div className="border-y border-border px-14 py-7 flex justify-center gap-[72px] mt-[72px]">
+      <div className="border-y border-border px-5 sm:px-14 py-7 flex justify-center gap-8 sm:gap-[72px] mt-12 sm:mt-[72px]">
         {stats.map((s) => (
           <div key={s.label} className="text-center">
-            <p className="font-outfit text-[1.8rem] font-black text-accent tracking-[-0.03em]">
+            <p className="font-outfit text-[1.4rem] sm:text-[1.8rem] font-black text-accent tracking-[-0.03em]">
               {s.value}
             </p>
             <p className="text-xs text-[#444] mt-1">{s.label}</p>
@@ -65,11 +67,11 @@ export default function LandingPage() {
       </div>
 
       {/* ── FEATURES ─────────────────────────────────────── */}
-      <section className="px-14 pt-20 pb-16 max-w-[1200px] mx-auto">
+      <section className="px-5 sm:px-8 lg:px-14 pt-16 sm:pt-20 pb-12 sm:pb-16 max-w-[1200px] mx-auto">
         <p className="text-xs text-muted uppercase tracking-[0.08em] font-semibold mb-4">
           What&apos;s included
         </p>
-        <h2 className="font-outfit text-[2.4rem] font-black tracking-[-0.03em] leading-[1.1] max-w-[460px] mb-3">
+        <h2 className="font-outfit text-[1.8rem] sm:text-[2.4rem] font-black tracking-[-0.03em] leading-[1.1] max-w-[460px] mb-3">
           Stop managing your coaching with group chats.
         </h2>
         <p className="text-muted text-sm max-w-[340px] leading-relaxed mb-10">
@@ -79,16 +81,21 @@ export default function LandingPage() {
           {features.map((f, i) => (
             <div
               key={f.title}
-              className="grid grid-cols-[40px_1fr_auto] gap-5 items-start px-7 py-6 rounded-xl border border-transparent hover:bg-surface hover:border-border transition-colors"
+              className="grid grid-cols-[32px_1fr] sm:grid-cols-[40px_1fr_auto] gap-4 sm:gap-5 items-start px-4 sm:px-7 py-5 sm:py-6 rounded-xl border border-transparent hover:bg-surface hover:border-border transition-colors"
             >
               <span className="font-outfit text-xs text-[#333] font-bold pt-0.5">
                 {String(i + 1).padStart(2, '0')}
               </span>
               <div>
-                <h3 className="font-bold tracking-[-0.01em] mb-1">{f.title}</h3>
+                <div className="flex items-start justify-between gap-3 mb-1">
+                  <h3 className="font-bold tracking-[-0.01em]">{f.title}</h3>
+                  <span className="sm:hidden shrink-0 text-[10px] text-accent bg-accent/10 px-2.5 py-0.5 rounded-full font-semibold">
+                    Now
+                  </span>
+                </div>
                 <p className="text-muted text-sm leading-relaxed">{f.description}</p>
               </div>
-              <span className="self-center text-[11px] text-accent bg-accent/10 px-3 py-0.5 rounded-full font-semibold whitespace-nowrap">
+              <span className="hidden sm:flex self-center text-[11px] text-accent bg-accent/10 px-3 py-0.5 rounded-full font-semibold whitespace-nowrap">
                 Available now
               </span>
             </div>
@@ -97,10 +104,10 @@ export default function LandingPage() {
       </section>
 
       {/* ── PRICING ──────────────────────────────────────── */}
-      <section id="pricing" className="px-14 pb-20 max-w-[1200px] mx-auto">
-        <div className="h-px bg-border mb-16" />
+      <section id="pricing" className="px-5 sm:px-8 lg:px-14 pb-16 sm:pb-20 max-w-[1200px] mx-auto">
+        <div className="h-px bg-border mb-12 sm:mb-16" />
         <p className="text-xs text-muted uppercase tracking-[0.08em] font-semibold mb-4">Pricing</p>
-        <h2 className="font-outfit text-[2.4rem] font-black tracking-[-0.03em] leading-[1.1] mb-2.5">
+        <h2 className="font-outfit text-[1.8rem] sm:text-[2.4rem] font-black tracking-[-0.03em] leading-[1.1] mb-2.5">
           Straight talk.
           <br />
           No surprises.
@@ -110,9 +117,9 @@ export default function LandingPage() {
           cancel whenever you want.
         </p>
 
-        <div className="grid grid-cols-2 gap-4 max-w-[680px] mb-7">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-[680px] mb-7">
           {/* Starter */}
-          <div className="bg-surface border border-border rounded-2xl p-7">
+          <div className="bg-surface border border-border rounded-2xl p-6 sm:p-7">
             <p className="text-xs text-muted uppercase tracking-[0.08em] font-semibold mb-3">
               Starter
             </p>
@@ -139,7 +146,7 @@ export default function LandingPage() {
           </div>
 
           {/* Pro */}
-          <div className="bg-surface border border-accent rounded-2xl p-7 relative">
+          <div className="bg-surface border border-accent rounded-2xl p-6 sm:p-7 relative">
             <span className="absolute -top-[11px] left-6 bg-accent text-[#0C0C10] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-[0.06em]">
               Coming soon
             </span>
@@ -187,9 +194,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── CTA BAND ─────────────────────────────────────── */}
-      <div className="mx-14 mb-20 bg-accent rounded-[18px] px-14 py-12 flex justify-between items-center gap-8">
+      <div className="mx-5 sm:mx-8 lg:mx-14 mb-16 sm:mb-20 bg-accent rounded-[18px] px-7 sm:px-14 py-10 sm:py-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 sm:gap-8">
         <div>
-          <h2 className="font-outfit text-[2rem] font-black text-[#0C0C10] tracking-[-0.03em] leading-[1.1] max-w-[380px]">
+          <h2 className="font-outfit text-[1.6rem] sm:text-[2rem] font-black text-[#0C0C10] tracking-[-0.03em] leading-[1.1] max-w-[380px]">
             Ready? 90 days on us.
           </h2>
           <p className="text-[#0C0C10]/60 mt-2 text-sm">
