@@ -133,3 +133,15 @@ export interface SubscriptionInfo {
   daysRemaining: number // days until trialEndsAt; 0 if already past
   isLocked: boolean // true when now > lockedAt
 }
+
+export interface PublicProgressEntry {
+  _id: string
+  coachId: string
+  studentId: string
+  sessionId?: string
+  type: ProgressEntryType
+  content: string
+  skillTags: string[]
+  createdAt: string
+  updatedAt: string
+}
