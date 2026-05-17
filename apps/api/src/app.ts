@@ -10,6 +10,7 @@ import { sessionRoutes } from './modules/session/session.routes'
 import { paymentRoutes } from './modules/payment/payment.routes'
 import { coachProfileRoutes } from './modules/coach-profile/coach-profile.routes'
 import { publicCoachesRoutes } from './modules/public-coaches/public-coaches.routes'
+import { subscriptionRoutes } from './modules/subscription/subscription.routes'
 import { env } from './config/env'
 
 export function createApp() {
@@ -31,6 +32,7 @@ export function createApp() {
   })
 
   app.use('/api/v1/auth', authRoutes)
+  app.use('/api/v1/subscriptions', subscriptionRoutes)
   app.use('/api/v1/dashboard', dashboardRoutes)
   app.use('/api/v1/students', studentRoutes)
   app.use('/api/v1/sessions', sessionRoutes)
