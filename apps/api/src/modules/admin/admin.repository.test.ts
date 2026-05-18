@@ -1,6 +1,8 @@
 import mongoose from 'mongoose'
 import { User } from '../auth/auth.model'
 import { UpgradeRequest } from '../upgrade-request/upgrade-request.model'
+import { Student } from '../student/student.model'
+import { Session } from '../session/session.model'
 import { AdminRepository } from './admin.repository'
 
 const TEST_DB = 'mongodb://localhost:27017/picklecoach_test'
@@ -12,11 +14,15 @@ beforeAll(async () => {
 afterAll(async () => {
   await User.deleteMany({})
   await UpgradeRequest.deleteMany({})
+  await Student.deleteMany({})
+  await Session.deleteMany({})
   await mongoose.disconnect()
 })
 beforeEach(async () => {
   await User.deleteMany({})
   await UpgradeRequest.deleteMany({})
+  await Student.deleteMany({})
+  await Session.deleteMany({})
 })
 
 const seedCoach = (overrides: Record<string, unknown> = {}) =>
@@ -143,5 +149,207 @@ describe('AdminRepository.getRevenueSummary', () => {
     })
     const result = await repo.getRevenueSummary()
     expect(result).toEqual([])
+  })
+})
+
+describe('AdminRepository.getCoachDetail', () => {
+  it('returns null for unknown coach id', async () => {
+    const fakeId = new mongoose.Types.ObjectId().toString()
+    expect(await repo.getCoachDetail(fakeId)).toBeNull()
+  })
+
+  it('returns null when id belongs to super_admin', async () => {
+    const admin = await seedCoach({ role: 'super_admin' })
+    expect(await repo.getCoachDetail(admin._id.toString())).toBeNull()
+  })
+
+  it('returns coach with zero counts and empty history when no related data', async () => {
+    const coach = await seedCoach({ name: 'Solo Coach' })
+    const detail = await repo.getCoachDetail(coach._id.toString())
+    expect(detail).not.toBeNull()
+    expect(detail!.studentCount).toBe(0)
+    expect(detail!.sessionCount).toBe(0)
+    expect(detail!.lastSessionAt).toBeUndefined()
+    expect(detail!.subscriptionHistory).toEqual([])
+  })
+
+  it('counts students and sessions belonging to this coach only', async () => {
+    const coach = await seedCoach()
+    const other = await seedCoach()
+    await Student.create([
+      { coachId: coach._id, name: 'A', skillLevel: 'beginner', isActive: true },
+      { coachId: coach._id, name: 'B', skillLevel: 'beginner', isActive: true },
+      { coachId: other._id, name: 'C', skillLevel: 'beginner', isActive: true },
+    ])
+    await Session.create([
+      {
+        coachId: coach._id,
+        type: 'private',
+        status: 'completed',
+        scheduledAt: new Date(),
+        durationMinutes: 60,
+      },
+      {
+        coachId: other._id,
+        type: 'private',
+        status: 'completed',
+        scheduledAt: new Date(),
+        durationMinutes: 60,
+      },
+    ])
+    const detail = await repo.getCoachDetail(coach._id.toString())
+    expect(detail!.studentCount).toBe(2)
+    expect(detail!.sessionCount).toBe(1)
+  })
+
+  it('returns subscription history sorted by reviewedAt ascending (oldest first)', async () => {
+    const admin = await seedCoach({ role: 'super_admin' })
+    const coach = await seedCoach({ subscriptionTier: 'pro' })
+    await UpgradeRequest.create({
+      coachId: coach._id,
+      months: 3,
+      amountDue: 399,
+      discountApplied: 0,
+      receiptUrl: 'http://x.com/a.jpg',
+      status: 'approved',
+      reviewedAt: new Date('2026-04-01'),
+      reviewedBy: admin._id,
+    })
+    await UpgradeRequest.create({
+      coachId: coach._id,
+      months: 1,
+      amountDue: 149,
+      discountApplied: 0,
+      receiptUrl: 'http://x.com/b.jpg',
+      status: 'approved',
+      reviewedAt: new Date('2026-01-01'),
+      reviewedBy: admin._id,
+    })
+    const detail = await repo.getCoachDetail(coach._id.toString())
+    expect(detail!.subscriptionHistory).toHaveLength(2)
+    expect(detail!.subscriptionHistory[0].months).toBe(1)
+    expect(detail!.subscriptionHistory[1].months).toBe(3)
+  })
+
+  it('excludes pending and rejected upgrade requests from subscription history', async () => {
+    const coach = await seedCoach()
+    await UpgradeRequest.create({
+      coachId: coach._id,
+      months: 1,
+      amountDue: 149,
+      discountApplied: 0,
+      receiptUrl: 'http://x.com/p.jpg',
+      status: 'pending',
+    })
+    const detail = await repo.getCoachDetail(coach._id.toString())
+    expect(detail!.subscriptionHistory).toHaveLength(0)
+  })
+})
+
+describe('AdminRepository.listExpiringCoaches', () => {
+  it('returns empty array when no pro coaches exist', async () => {
+    expect(await repo.listExpiringCoaches()).toEqual([])
+  })
+
+  it('returns pro coaches whose proEndsAt is within 14 days', async () => {
+    const soon = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+    await seedCoach({ name: 'Expiring', subscriptionTier: 'pro', proEndsAt: soon })
+    const result = await repo.listExpiringCoaches()
+    expect(result).toHaveLength(1)
+    expect(result[0].daysLeft).toBeGreaterThanOrEqual(6)
+    expect(result[0].daysLeft).toBeLessThanOrEqual(8)
+    expect(result[0].proEndsAt).toBeDefined()
+  })
+
+  it('excludes coaches whose proEndsAt is more than 14 days away', async () => {
+    const farFuture = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    await seedCoach({ subscriptionTier: 'pro', proEndsAt: farFuture })
+    expect(await repo.listExpiringCoaches()).toEqual([])
+  })
+
+  it('excludes starter coaches', async () => {
+    const soon = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
+    await seedCoach({ subscriptionTier: 'starter', proEndsAt: soon })
+    expect(await repo.listExpiringCoaches()).toEqual([])
+  })
+
+  it('sorts results by proEndsAt ascending (soonest first)', async () => {
+    const day3 = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+    const day10 = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000)
+    await seedCoach({ name: 'Later', subscriptionTier: 'pro', proEndsAt: day10 })
+    await seedCoach({ name: 'Sooner', subscriptionTier: 'pro', proEndsAt: day3 })
+    const result = await repo.listExpiringCoaches()
+    expect(result[0].name).toBe('Sooner')
+  })
+})
+
+describe('AdminRepository.listChurnedCoaches', () => {
+  it('returns empty array when no coaches have churned', async () => {
+    expect(await repo.listChurnedCoaches()).toEqual([])
+  })
+
+  it('returns starter coaches who previously had an approved upgrade request', async () => {
+    const admin = await seedCoach({ role: 'super_admin' })
+    const churned = await seedCoach({ name: 'Lapsed', subscriptionTier: 'starter' })
+    await UpgradeRequest.create({
+      coachId: churned._id,
+      months: 1,
+      amountDue: 149,
+      discountApplied: 0,
+      receiptUrl: 'http://x.com/c.jpg',
+      status: 'approved',
+      reviewedAt: new Date('2026-03-01'),
+      reviewedBy: admin._id,
+    })
+    const result = await repo.listChurnedCoaches()
+    expect(result).toHaveLength(1)
+    expect(result[0]._id).toBe(churned._id.toString())
+    expect(result[0].name).toBe('Lapsed')
+    expect(result[0].lastApprovedAt).toBeDefined()
+  })
+
+  it('excludes current pro coaches even if they have approved upgrade requests', async () => {
+    const admin = await seedCoach({ role: 'super_admin' })
+    const active = await seedCoach({ subscriptionTier: 'pro' })
+    await UpgradeRequest.create({
+      coachId: active._id,
+      months: 1,
+      amountDue: 149,
+      discountApplied: 0,
+      receiptUrl: 'http://x.com/d.jpg',
+      status: 'approved',
+      reviewedAt: new Date(),
+      reviewedBy: admin._id,
+    })
+    expect(await repo.listChurnedCoaches()).toEqual([])
+  })
+
+  it('excludes starter coaches who have never had an approved upgrade request', async () => {
+    await seedCoach({ subscriptionTier: 'starter' })
+    expect(await repo.listChurnedCoaches()).toEqual([])
+  })
+})
+
+describe('AdminRepository.listCoaches with filters', () => {
+  it('returns only pro coaches when tier filter is "pro"', async () => {
+    await seedCoach({ subscriptionTier: 'starter' })
+    await seedCoach({ subscriptionTier: 'pro' })
+    const result = await repo.listCoaches({ tier: 'pro' })
+    expect(result).toHaveLength(1)
+    expect(result[0].subscriptionTier).toBe('pro')
+  })
+
+  it('returns only expired coaches when status filter is "expired"', async () => {
+    await seedCoach({ subscriptionStatus: 'active' })
+    await seedCoach({ subscriptionStatus: 'expired' })
+    const result = await repo.listCoaches({ status: 'expired' })
+    expect(result).toHaveLength(1)
+    expect(result[0].subscriptionStatus).toBe('expired')
+  })
+
+  it('returns all coaches when no filters are passed', async () => {
+    await seedCoach({ subscriptionTier: 'starter' })
+    await seedCoach({ subscriptionTier: 'pro' })
+    expect(await repo.listCoaches()).toHaveLength(2)
   })
 })
