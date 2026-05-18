@@ -78,6 +78,12 @@ export interface PublicUser {
   proEndsAt?: string
 }
 
+export interface SocialLinks {
+  facebook?: string
+  instagram?: string
+  youtube?: string
+}
+
 export interface PublicCoachProfile {
   _id: string
   coachId: string
@@ -96,6 +102,11 @@ export interface PublicCoachProfile {
   contactPhone?: string
   showContactInfo: boolean
   totalViews: number
+  subscriptionTier: SubscriptionTier
+  ageGroups: string[]
+  languages: string[]
+  socialLinks?: SocialLinks
+  coachingPhilosophy?: string
   createdAt: string
   updatedAt: string
 }

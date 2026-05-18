@@ -13,6 +13,17 @@ export const SPECIALIZATIONS = [
   'singles',
 ] as const
 
+export const AGE_GROUPS = ['kids', 'teens', 'adults', 'seniors'] as const
+
+export const LANGUAGES = [
+  'filipino',
+  'english',
+  'cebuano',
+  'ilocano',
+  'hiligaynon',
+  'bisaya',
+] as const
+
 export const updateCoachProfileSchema = z.object({
   displayName: z.string().min(1, 'Display name is required').optional(),
   bio: z.string().optional(),
@@ -26,6 +37,16 @@ export const updateCoachProfileSchema = z.object({
   contactPhone: z.string().optional().or(z.literal('')),
   showContactInfo: z.boolean().optional(),
   isPublic: z.boolean().optional(),
+  ageGroups: z.array(z.enum(AGE_GROUPS)).optional(),
+  languages: z.array(z.enum(LANGUAGES)).optional(),
+  coachingPhilosophy: z.string().max(300).optional(),
+  socialLinks: z
+    .object({
+      facebook: z.string().url().optional().or(z.literal('')),
+      instagram: z.string().url().optional().or(z.literal('')),
+      youtube: z.string().url().optional().or(z.literal('')),
+    })
+    .optional(),
 })
 
 export type UpdateCoachProfileInput = z.infer<typeof updateCoachProfileSchema>
