@@ -1,9 +1,22 @@
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import type { CoachDirectoryResult } from '@picklecoach/shared'
 import { publicApiFetch } from '@/lib/public-api'
 import { CoachCard } from '@/components/coaches/CoachCard'
 import { CoachFilters } from '@/components/coaches/CoachFilters'
 import { CoachPagination } from '@/components/coaches/CoachPagination'
+
+export const metadata: Metadata = {
+  title: 'Find a Pickleball Coach',
+  description:
+    'Browse certified pickleball coaches in the Philippines. Filter by specialization, city, or session type.',
+  openGraph: {
+    title: 'Find a Pickleball Coach | PickleCoach',
+    description:
+      'Browse certified pickleball coaches in the Philippines. Filter by specialization, city, or session type.',
+    url: '/coaches',
+  },
+}
 
 type SearchParams = Promise<{
   specialization?: string

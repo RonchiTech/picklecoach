@@ -15,8 +15,26 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'PickleCoach',
-  description: 'Manage your pickleball coaching business',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  title: {
+    default: 'PickleCoach',
+    template: '%s | PickleCoach',
+  },
+  description:
+    'PickleCoach helps Filipino pickleball coaches manage students, sessions, and payments — all in one place.',
+  openGraph: {
+    type: 'website',
+    siteName: 'PickleCoach',
+    title: 'PickleCoach — Coaching, not paperwork.',
+    description:
+      'PickleCoach helps Filipino pickleball coaches manage students, sessions, and payments — all in one place.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'PickleCoach — Coaching, not paperwork.',
+    description:
+      'PickleCoach helps Filipino pickleball coaches manage students, sessions, and payments — all in one place.',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -1,10 +1,25 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import DashboardPreview from '@/components/marketing/DashboardPreview'
+
+export const metadata: Metadata = {
+  title: {
+    absolute: 'PickleCoach — Coaching, not paperwork.',
+  },
+  description:
+    'PickleCoach helps Filipino pickleball coaches manage students, sessions, and payments — all in one place. Free forever on Starter.',
+  openGraph: {
+    title: 'PickleCoach — Coaching, not paperwork.',
+    description:
+      'PickleCoach helps Filipino pickleball coaches manage students, sessions, and payments — all in one place. Free forever on Starter.',
+    url: '/',
+  },
+}
 
 export default function LandingPage() {
   return (
     <div className="overflow-x-hidden">
-      {/* ── HERO ─────────────────────────────────────────── */}
+      {/* HERO */}
       <section className="px-5 sm:px-8 lg:px-14 pt-12 sm:pt-[72px] grid grid-cols-1 lg:grid-cols-[1fr_460px] gap-12 lg:gap-16 items-start max-w-[1200px] mx-auto">
         <div>
           <div className="inline-flex items-center gap-2 mb-6">
@@ -54,7 +69,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── STATS STRIP ──────────────────────────────────── */}
+      {/* STATS STRIP */}
       <div className="border-y border-border px-5 sm:px-14 py-7 flex justify-center gap-8 sm:gap-[72px] mt-12 sm:mt-[72px]">
         {stats.map((s) => (
           <div key={s.label} className="text-center">
@@ -66,7 +81,7 @@ export default function LandingPage() {
         ))}
       </div>
 
-      {/* ── FEATURES ─────────────────────────────────────── */}
+      {/* FEATURES */}
       <section className="px-5 sm:px-8 lg:px-14 pt-16 sm:pt-20 pb-12 sm:pb-16 max-w-[1200px] mx-auto">
         <p className="text-xs text-muted uppercase tracking-[0.08em] font-semibold mb-4">
           What&apos;s included
@@ -103,7 +118,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── PRICING ──────────────────────────────────────── */}
+      {/* PRICING */}
       <section id="pricing" className="px-5 sm:px-8 lg:px-14 pb-16 sm:pb-20 max-w-[1200px] mx-auto">
         <div className="h-px bg-border mb-12 sm:mb-16" />
         <p className="text-xs text-muted uppercase tracking-[0.08em] font-semibold mb-4">Pricing</p>
@@ -117,7 +132,6 @@ export default function LandingPage() {
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-[680px] mb-7">
-          {/* Starter */}
           <div className="bg-surface border border-border rounded-2xl p-6 sm:p-7">
             <p className="text-xs text-muted uppercase tracking-[0.08em] font-semibold mb-3">
               Starter
@@ -144,7 +158,6 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Pro */}
           <div className="bg-surface border border-accent rounded-2xl p-6 sm:p-7 relative">
             <p className="text-xs text-accent uppercase tracking-[0.08em] font-semibold mb-3">
               Pro
@@ -182,7 +195,7 @@ export default function LandingPage() {
         </p>
       </section>
 
-      {/* ── CTA BAND ─────────────────────────────────────── */}
+      {/* CTA BAND */}
       <div className="mx-5 sm:mx-8 lg:mx-14 mb-16 sm:mb-20 bg-accent rounded-[18px] px-7 sm:px-14 py-10 sm:py-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 sm:gap-8">
         <div>
           <h2 className="font-outfit text-[1.6rem] sm:text-[2rem] font-black text-[#0C0C10] tracking-[-0.03em] leading-[1.1] max-w-[380px]">
