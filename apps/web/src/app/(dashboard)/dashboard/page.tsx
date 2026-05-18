@@ -1,12 +1,17 @@
-import type { DashboardStats } from '@picklecoach/shared'
+import type { DashboardStats, PublicUser } from '@picklecoach/shared'
 import { serverApiFetch } from '@/lib/server-api'
 import { StatCard } from '@/components/dashboard/StatCard'
+import { UpgradeBanner } from '@/components/dashboard/UpgradeBanner'
 
 export default async function DashboardPage() {
-  const stats = await serverApiFetch<DashboardStats>('/api/v1/dashboard/stats')
+  const [stats, user] = await Promise.all([
+    serverApiFetch<DashboardStats>('/api/v1/dashboard/stats'),
+    serverApiFetch<PublicUser>('/api/v1/auth/me'),
+  ])
 
   return (
     <div>
+      {user?.subscriptionTier === 'starter' && <UpgradeBanner />}
       <h1 className="font-outfit text-3xl font-bold text-text-primary">Dashboard</h1>
       <p className="mt-1 text-sm text-text-secondary">Your coaching overview</p>
 
