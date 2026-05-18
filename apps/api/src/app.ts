@@ -10,10 +10,11 @@ import { sessionRoutes } from './modules/session/session.routes'
 import { paymentRoutes } from './modules/payment/payment.routes'
 import { coachProfileRoutes } from './modules/coach-profile/coach-profile.routes'
 import { publicCoachesRoutes } from './modules/public-coaches/public-coaches.routes'
-import { subscriptionRoutes } from './modules/subscription/subscription.routes'
 import { progressEntryRoutes } from './modules/progress-entry/progress-entry.routes'
 import { promotionRoutes } from './modules/promotion/promotion.routes'
 import { adminRoutes } from './modules/admin/admin.routes'
+import { upgradeRequestRoutes } from './modules/upgrade-request/upgrade-request.routes'
+import { settingsRoutes } from './modules/platform-settings/platform-settings.routes'
 import { authenticate } from './middleware/auth.middleware'
 import { env } from './config/env'
 
@@ -36,15 +37,16 @@ export function createApp() {
   })
 
   app.use('/api/v1/auth', authRoutes)
-  app.use('/api/v1/subscriptions', subscriptionRoutes)
   app.use('/api/v1/dashboard', authenticate, dashboardRoutes)
   app.use('/api/v1/students', authenticate, studentRoutes)
   app.use('/api/v1/sessions', authenticate, sessionRoutes)
   app.use('/api/v1/payments', authenticate, paymentRoutes)
   app.use('/api/v1/coach-profiles', authenticate, coachProfileRoutes)
-  app.use('/api/v1/progress-entries', authenticate, progressEntryRoutes)
+  app.use('/api/v1/progress-entries', progressEntryRoutes)
   app.use('/api/v1/coaches', publicCoachesRoutes)
   app.use('/api/v1/promotions', promotionRoutes)
+  app.use('/api/v1/upgrade-requests', upgradeRequestRoutes)
+  app.use('/api/v1/settings', settingsRoutes)
   app.use('/api/v1/admin', adminRoutes)
 
   app.use(notFoundMiddleware)
