@@ -7,6 +7,11 @@ import { User } from '../auth/auth.model'
 import { Redemption, Promotion } from '../promotion/promotion.model'
 import { createError } from '../../middleware/error.middleware'
 import { env } from '../../config/env'
+import {
+  sendUpgradeRequestReceived,
+  sendUpgradeApproved,
+  sendUpgradeRejected,
+} from '../../services/email.service'
 
 cloudinary.config({
   cloud_name: env.CLOUDINARY_CLOUD_NAME,
@@ -66,7 +71,7 @@ export class UpgradeRequestService {
 
     const receiptUrl = await uploadToCloudinary(input.receiptBuffer)
 
-    return this.repo.create({
+    const request = await this.repo.create({
       coachId: input.coachId,
       months: input.months,
       amountDue: baseAmount - discountApplied,
@@ -74,6 +79,15 @@ export class UpgradeRequestService {
       promoCode: input.promoCode,
       receiptUrl,
     })
+
+    const coach = await User.findById(input.coachId).lean()
+    if (coach) {
+      sendUpgradeRequestReceived(coach.email, coach.name, input.months, request.amountDue).catch(
+        (err) => console.error('[email] sendUpgradeRequestReceived failed:', err)
+      )
+    }
+
+    return request
   }
 
   async getMine(coachId: string): Promise<IUpgradeRequest | null> {
@@ -109,6 +123,13 @@ export class UpgradeRequestService {
     }
 
     await this.repo.approve(requestId, { notes, reviewedBy: adminId })
+
+    const coach = await User.findById(request.coachId).lean()
+    if (coach?.proEndsAt) {
+      sendUpgradeApproved(coach.email, coach.name, request.months, coach.proEndsAt).catch((err) =>
+        console.error('[email] sendUpgradeApproved failed:', err)
+      )
+    }
   }
 
   async reject(requestId: string, adminId: string, notes?: string): Promise<void> {
@@ -118,6 +139,13 @@ export class UpgradeRequestService {
       throw createError('Request has already been reviewed', 409, 'ALREADY_REVIEWED')
     }
     await this.repo.reject(requestId, { notes, reviewedBy: adminId })
+
+    const coach = await User.findById(request.coachId).lean()
+    if (coach) {
+      sendUpgradeRejected(coach.email, coach.name, notes).catch((err) =>
+        console.error('[email] sendUpgradeRejected failed:', err)
+      )
+    }
   }
 
   async listAll() {
