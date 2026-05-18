@@ -7,6 +7,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
 } from '@picklecoach/shared'
+import { z } from 'zod'
 import { AuthService } from './auth.service'
 import { env } from '../../config/env'
 
@@ -94,6 +95,16 @@ export class AuthController {
       await this.service.deleteAccount(req.user!.userId)
       res.clearCookie('token')
       res.json({ success: true, data: { message: 'Account deleted.' } })
+    } catch (err) {
+      next(err)
+    }
+  }
+
+  updateGoal = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { monthlyGoal } = z.object({ monthlyGoal: z.number().int().min(0) }).parse(req.body)
+      const user = await this.service.setGoal(req.user!.userId, monthlyGoal)
+      res.json({ success: true, data: user })
     } catch (err) {
       next(err)
     }

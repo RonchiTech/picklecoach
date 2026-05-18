@@ -72,6 +72,12 @@ export class AuthService {
     return this.sanitize(user)
   }
 
+  async setGoal(id: string, monthlyGoal: number): Promise<PublicUser> {
+    const user = await this.repo.updateGoal(id, monthlyGoal)
+    if (!user) throw createError('User not found', 404, 'USER_NOT_FOUND')
+    return this.sanitize(user)
+  }
+
   async updateProfile(id: string, input: UpdateProfileInput): Promise<PublicUser> {
     const user = await this.repo.update(id, input)
     if (!user) throw createError('User not found', 404, 'USER_NOT_FOUND')
@@ -149,6 +155,8 @@ export class AuthService {
       role: user.role,
       subscriptionTier: user.subscriptionTier,
       subscriptionStatus: user.subscriptionStatus,
+      proEndsAt: user.proEndsAt?.toISOString(),
+      monthlyGoal: user.monthlyGoal,
     }
   }
 }
