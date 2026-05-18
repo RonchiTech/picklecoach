@@ -1,16 +1,23 @@
-import type { PublicCoachProfile } from '@picklecoach/shared'
+import type { PublicCoachProfile, PublicUser } from '@picklecoach/shared'
 import { serverApiFetch } from '@/lib/server-api'
 import { IdentityForm } from '@/components/public-profile/IdentityForm'
 import { CoachingDetailsForm } from '@/components/public-profile/CoachingDetailsForm'
 import { RatesForm } from '@/components/public-profile/RatesForm'
 import { ContactVisibilityForm } from '@/components/public-profile/ContactVisibilityForm'
+import { SocialLinksForm } from '@/components/public-profile/SocialLinksForm'
+import { PhilosophyForm } from '@/components/public-profile/PhilosophyForm'
 
 export default async function PublicProfilePage() {
-  const profile = await serverApiFetch<PublicCoachProfile>('/api/v1/coach-profiles/me')
+  const [profile, user] = await Promise.all([
+    serverApiFetch<PublicCoachProfile>('/api/v1/coach-profiles/me'),
+    serverApiFetch<PublicUser>('/api/v1/auth/me'),
+  ])
 
   if (!profile) {
     return <p className="text-text-secondary text-sm">Unable to load profile. Please try again.</p>
   }
+
+  const isPro = user?.subscriptionTier === 'pro' || user?.subscriptionTier === 'team'
 
   return (
     <div className="max-w-lg">
@@ -36,7 +43,7 @@ export default async function PublicProfilePage() {
         <h2 className="mb-4 border-b border-border pb-3 text-sm font-semibold text-text-primary">
           Coaching Details
         </h2>
-        <CoachingDetailsForm profile={profile} />
+        <CoachingDetailsForm profile={profile} isPro={isPro} />
       </div>
 
       <div className="mb-5 rounded-xl border border-border bg-surface p-5">
@@ -46,11 +53,25 @@ export default async function PublicProfilePage() {
         <RatesForm profile={profile} />
       </div>
 
-      <div className="rounded-xl border border-border bg-surface p-5">
+      <div className="mb-5 rounded-xl border border-border bg-surface p-5">
         <h2 className="mb-4 border-b border-border pb-3 text-sm font-semibold text-text-primary">
           Contact & Visibility
         </h2>
         <ContactVisibilityForm profile={profile} />
+      </div>
+
+      <div className="mb-5 rounded-xl border border-border bg-surface p-5">
+        <h2 className="mb-4 border-b border-border pb-3 text-sm font-semibold text-text-primary">
+          Social Media
+        </h2>
+        <SocialLinksForm profile={profile} isPro={isPro} />
+      </div>
+
+      <div className="rounded-xl border border-border bg-surface p-5">
+        <h2 className="mb-4 border-b border-border pb-3 text-sm font-semibold text-text-primary">
+          Coaching Philosophy
+        </h2>
+        <PhilosophyForm profile={profile} isPro={isPro} />
       </div>
     </div>
   )
