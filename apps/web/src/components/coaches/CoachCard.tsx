@@ -16,6 +16,8 @@ const SPEC_LABELS: Record<string, string> = {
 }
 
 export function CoachCard({ coach }: { coach: PublicCoachProfile }) {
+  const isPro = coach.subscriptionTier !== 'starter'
+
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-5">
       <div className="flex items-center gap-3">
@@ -32,8 +34,17 @@ export function CoachCard({ coach }: { coach: PublicCoachProfile }) {
             {coach.displayName.charAt(0)}
           </div>
         )}
-        <div>
-          <p className="font-outfit font-semibold text-text-primary">{coach.displayName}</p>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="truncate font-outfit font-semibold text-text-primary">
+              {coach.displayName}
+            </p>
+            {isPro && (
+              <span className="shrink-0 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-base uppercase tracking-wide">
+                Pro
+              </span>
+            )}
+          </div>
           {coach.city && <p className="text-xs text-text-secondary">{coach.city}</p>}
         </div>
       </div>
