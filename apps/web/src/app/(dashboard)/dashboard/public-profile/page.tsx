@@ -30,15 +30,26 @@ export default async function PublicProfilePage() {
           Manage your public listing on PickleCoach
         </p>
         <div className="mt-3 rounded-lg border border-border bg-surface px-4 py-3 text-sm text-text-secondary">
-          Your public URL:{' '}
-          <Link
-            href={`/coaches/${profile.slug}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-accent underline"
-          >
-            {publicProfileUrl.replace(/^https?:\/\//, '')}
-          </Link>
+          <span>Your public URL: </span>
+          {profile.isPublic ? (
+            <Link
+              href={`/coaches/${profile.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-accent underline"
+            >
+              {publicProfileUrl.replace(/^https?:\/\//, '')}
+            </Link>
+          ) : (
+            <span className="font-medium text-text-secondary opacity-50">
+              {publicProfileUrl.replace(/^https?:\/\//, '')}
+            </span>
+          )}
+          {!profile.isPublic && (
+            <p className="mt-1 text-xs text-text-secondary opacity-60">
+              Enable &ldquo;List me in the coach directory&rdquo; below to activate this link.
+            </p>
+          )}
         </div>
       </div>
 
