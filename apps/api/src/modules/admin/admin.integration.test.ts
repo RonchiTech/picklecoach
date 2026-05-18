@@ -56,7 +56,7 @@ describe('GET /api/v1/admin/stats', () => {
     expect(res.status).toBe(200)
     expect(res.body.data).toMatchObject({
       totalCoaches: 1,
-      activeTrials: 1,
+      activeTrials: 0,
       activeSubscriptions: 0,
     })
   })

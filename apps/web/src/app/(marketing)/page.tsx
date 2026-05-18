@@ -10,7 +10,7 @@ export default function LandingPage() {
           <div className="inline-flex items-center gap-2 mb-6">
             <span className="w-[7px] h-[7px] bg-accent rounded-full" />
             <span className="text-[11px] text-muted uppercase tracking-[0.04em] font-medium">
-              90-day free trial · No credit card
+              Free forever on Starter · No credit card
             </span>
           </div>
           <h1 className="font-outfit text-[2.8rem] sm:text-[4rem] font-black leading-none tracking-[-0.03em] mb-5">
@@ -29,7 +29,7 @@ export default function LandingPage() {
               href="/register"
               className="bg-accent text-[#0C0C10] font-black text-sm px-6 py-3.5 rounded-xl hover:opacity-90 transition-opacity"
             >
-              Start free trial
+              Start free
             </Link>
             <a
               href="#pricing"
@@ -45,8 +45,8 @@ export default function LandingPage() {
             </Link>
           </div>
           <p className="text-xs text-[#444]">
-            Free for <span className="text-[#666] font-semibold">90 days</span> · No credit card ·
-            Cancel anytime
+            Starter is <span className="text-[#666] font-semibold">free forever</span> · No credit
+            card · Upgrade to Pro anytime
           </p>
         </div>
         <div className="hidden lg:block">
@@ -90,13 +90,13 @@ export default function LandingPage() {
                 <div className="flex items-start justify-between gap-3 mb-1">
                   <h3 className="font-bold tracking-[-0.01em]">{f.title}</h3>
                   <span className="sm:hidden shrink-0 text-[10px] text-accent bg-accent/10 px-2.5 py-0.5 rounded-full font-semibold">
-                    Now
+                    {f.tier}
                   </span>
                 </div>
                 <p className="text-muted text-sm leading-relaxed">{f.description}</p>
               </div>
               <span className="hidden sm:flex self-center text-[11px] text-accent bg-accent/10 px-3 py-0.5 rounded-full font-semibold whitespace-nowrap">
-                Available now
+                {f.tier}
               </span>
             </div>
           ))}
@@ -113,8 +113,7 @@ export default function LandingPage() {
           No surprises.
         </h2>
         <p className="text-muted text-sm max-w-[420px] leading-relaxed mb-10">
-          Start free for 90 days on Starter. No credit card. Upgrade to Pro when it launches —
-          cancel whenever you want.
+          Starter is free forever. Upgrade to Pro for advanced coaching tools.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-[680px] mb-7">
@@ -124,11 +123,11 @@ export default function LandingPage() {
               Starter
             </p>
             <p className="font-outfit text-[2.6rem] font-black tracking-[-0.04em] leading-none">
-              ₱99
+              Free
             </p>
-            <p className="text-xs text-[#444] mt-1 mb-4">per month after trial</p>
+            <p className="text-xs text-[#444] mt-1 mb-4">forever — no credit card</p>
             <p className="text-sm text-muted leading-relaxed pb-4 border-b border-white/5 mb-4">
-              Everything you need to run your coaching business today.
+              Everything you need to run your coaching business.
             </p>
             <ul className="flex flex-col gap-2 mb-6">
               {starterFeatures.map((f) => (
@@ -141,37 +140,29 @@ export default function LandingPage() {
               href="/register"
               className="block text-center py-3 rounded-xl font-bold text-sm border border-border text-[#666] hover:border-muted hover:text-white transition-colors"
             >
-              Start free trial
+              Start free
             </Link>
           </div>
 
           {/* Pro */}
           <div className="bg-surface border border-accent rounded-2xl p-6 sm:p-7 relative">
-            <span className="absolute -top-[11px] left-6 bg-accent text-[#0C0C10] text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-[0.06em]">
-              Coming soon
-            </span>
             <p className="text-xs text-accent uppercase tracking-[0.08em] font-semibold mb-3">
               Pro
             </p>
             <p className="font-outfit text-[2.6rem] font-black tracking-[-0.04em] leading-none">
-              ₱299
+              ₱149
             </p>
-            <p className="text-xs text-[#444] mt-1 mb-4">per month after trial</p>
+            <p className="text-xs text-[#444] mt-1 mb-4">per month · paid via GCash</p>
             <p className="text-sm text-muted leading-relaxed pb-4 border-b border-white/5 mb-4">
-              Everything in Starter, plus advanced tools as they launch.
+              Everything in Starter, plus advanced tools for growing coaches.
             </p>
             <ul className="flex flex-col gap-2 mb-6">
               <li className="flex gap-2 items-baseline text-sm text-text-secondary">
                 <span className="text-accent shrink-0">✓</span> Everything in Starter
               </li>
               {proFeatures.map((f) => (
-                <li
-                  key={f}
-                  className="flex gap-2 items-baseline text-sm text-text-secondary opacity-45"
-                >
-                  <span className="text-accent shrink-0">✓</span>
-                  {f}
-                  <span className="text-[11px] text-muted">· soon</span>
+                <li key={f} className="flex gap-2 items-baseline text-sm text-text-secondary">
+                  <span className="text-accent shrink-0">✓</span> {f}
                 </li>
               ))}
             </ul>
@@ -179,17 +170,15 @@ export default function LandingPage() {
               href="/register"
               className="block text-center py-3 rounded-xl font-bold text-sm bg-accent text-[#0C0C10] hover:opacity-90 transition-opacity"
             >
-              Join waitlist
+              Request Pro
             </Link>
           </div>
         </div>
 
         <p className="text-xs text-[#333] leading-[1.8] max-w-[560px]">
-          All plans include a <strong className="text-[#555]">90-day free trial on Starter</strong>{' '}
-          — no credit card required. Pro features are in development and will roll out to Pro
-          subscribers first. Items marked <em>soon</em> are not yet available. After your trial,
-          accounts that remain unpaid are locked for 7 days, then archived. Your data is preserved —
-          reactivate anytime.
+          Starter is free with no time limit. Pro is paid monthly via GCash — submit your receipt
+          and we&apos;ll activate your account within 24 hours. Bundle discounts available for 3, 6,
+          and 12 month payments.
         </p>
       </section>
 
@@ -197,10 +186,10 @@ export default function LandingPage() {
       <div className="mx-5 sm:mx-8 lg:mx-14 mb-16 sm:mb-20 bg-accent rounded-[18px] px-7 sm:px-14 py-10 sm:py-12 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 sm:gap-8">
         <div>
           <h2 className="font-outfit text-[1.6rem] sm:text-[2rem] font-black text-[#0C0C10] tracking-[-0.03em] leading-[1.1] max-w-[380px]">
-            Ready? 90 days on us.
+            Ready? Start free today.
           </h2>
           <p className="text-[#0C0C10]/60 mt-2 text-sm">
-            No credit card. No commitment. Just less chaos.
+            Starter is free forever. Upgrade to Pro anytime.
           </p>
         </div>
         <div className="flex gap-2.5 shrink-0">
@@ -208,7 +197,7 @@ export default function LandingPage() {
             href="/register"
             className="bg-[#0C0C10] text-white font-bold text-sm px-6 py-3.5 rounded-xl hover:opacity-90 transition-opacity"
           >
-            Start free trial →
+            Start free →
           </Link>
           <Link
             href="/coaches"
@@ -225,9 +214,9 @@ export default function LandingPage() {
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 const stats = [
-  { value: '90', label: 'days free, no card needed' },
-  { value: '₱99', label: 'per month after trial' },
-  { value: '3', label: 'tools in one dashboard' },
+  { value: 'Free', label: 'Starter tier, forever' },
+  { value: '₱149', label: 'per month for Pro' },
+  { value: '4', label: 'tools in one dashboard' },
 ]
 
 const features = [
@@ -235,21 +224,31 @@ const features = [
     title: 'Student roster',
     description:
       'Track every student — skill level, contact info, and notes. No more digging through Messenger.',
+    tier: 'Starter',
   },
   {
     title: 'Session scheduling',
     description:
       "Log private and group sessions. Mark completed or cancelled. See today's lineup the moment you open the app.",
+    tier: 'Starter',
   },
   {
     title: 'Payment tracking',
     description:
       "Cash, GCash, bank transfer — record it all. Know exactly who's paid and who owes, without asking.",
+    tier: 'Starter',
   },
   {
     title: 'Public coach profile',
     description:
       'Get listed in the PickleCoach directory. Share your rates, specializations, and contact info with potential students.',
+    tier: 'Starter',
+  },
+  {
+    title: 'Student progress log',
+    description:
+      'Track skill development, goals, and milestones for each student. See the full timeline at a glance.',
+    tier: 'Pro',
   },
 ]
 
@@ -262,9 +261,7 @@ const starterFeatures = [
 ]
 
 const proFeatures = [
-  'Student progress log',
-  'Session notes',
-  'Payment reports',
-  'Email reminders',
-  'Profile analytics',
+  'Student progress tracking',
+  'Skill tag filtering',
+  'Assessment & milestone logs',
 ]
