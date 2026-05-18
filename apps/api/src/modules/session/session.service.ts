@@ -27,6 +27,10 @@ export class SessionService {
     })
   }
 
+  async clone(coachId: string, id: string): Promise<ISession> {
+    return this.repo.clone(id, coachId)
+  }
+
   async update(coachId: string, id: string, input: UpdateSessionInput): Promise<ISession> {
     const { scheduledAt: rawDate, ...rest } = input
     const data: SessionUpdateData = {

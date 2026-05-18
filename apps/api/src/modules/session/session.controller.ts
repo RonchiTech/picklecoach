@@ -33,6 +33,15 @@ export class SessionController {
     }
   }
 
+  clone = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const session = await this.service.clone(req.user!.userId, req.params.id)
+      res.status(201).json({ success: true, data: session })
+    } catch (err) {
+      next(err)
+    }
+  }
+
   update = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const input = updateSessionSchema.parse(req.body)

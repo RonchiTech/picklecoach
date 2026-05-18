@@ -14,5 +14,6 @@ router.get('/', controller.list)
 router.post('/', controller.create)
 router.get('/:id', controller.getOne)
 router.patch('/:id', controller.update)
+router.post('/:id/clone', controller.clone)
 
 export { router as sessionRoutes }
