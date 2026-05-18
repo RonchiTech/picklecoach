@@ -32,7 +32,12 @@ beforeEach(() => {
 describe('DashboardService.getStats', () => {
   it('returns zero stats when no students or sessions exist', async () => {
     const stats = await service.getStats(validCoachId)
-    expect(stats).toEqual({ todaySessions: 0, totalStudents: 0, unpaidBalance: 0 })
+    expect(stats).toEqual({
+      todaySessions: 0,
+      totalStudents: 0,
+      unpaidBalance: 0,
+      monthlyRevenue: 0,
+    })
   })
 
   it('returns real student count from Student model', async () => {
@@ -66,10 +71,11 @@ describe('DashboardService.getStats', () => {
     expect(stats.unpaidBalance).toBe(0)
   })
 
-  it('returns numbers for all three stat fields', async () => {
+  it('returns numbers for all stat fields', async () => {
     const stats = await service.getStats(validCoachId)
     expect(typeof stats.todaySessions).toBe('number')
     expect(typeof stats.totalStudents).toBe('number')
     expect(typeof stats.unpaidBalance).toBe('number')
+    expect(typeof stats.monthlyRevenue).toBe('number')
   })
 })
