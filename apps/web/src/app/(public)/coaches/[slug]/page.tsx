@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -17,15 +18,71 @@ const SPEC_LABELS: Record<string, string> = {
   singles: 'Singles',
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const coach = await publicApiFetch<PublicCoachProfile>(`/api/v1/coaches/${slug}`)
+  if (!coach) return { title: 'Coach Not Found' }
+
+  const location = coach.city ? ` in ${coach.city}` : ''
+  const specs = coach.specializations.slice(0, 2).join(', ')
+  const description = coach.bio
+    ? coach.bio.slice(0, 160)
+    : `${coach.displayName} is a pickleball coach${location}${specs ? ` specializing in ${specs}` : ''}.`
+
+  return {
+    title: coach.displayName,
+    description,
+    openGraph: {
+      title: `${coach.displayName} | PickleCoach`,
+      description,
+      url: `/coaches/${slug}`,
+      type: 'profile',
+      ...(coach.photoUrl && { images: [{ url: coach.photoUrl }] }),
+    },
+    twitter: {
+      card: 'summary',
+      title: `${coach.displayName} | PickleCoach`,
+      description,
+    },
+  }
+}
+
 export default async function CoachProfilePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
   const coach = await publicApiFetch<PublicCoachProfile>(`/api/v1/coaches/${slug}`)
   if (!coach) notFound()
 
   const hasRates = coach.privateRate || coach.groupRate
+  const base = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: coach.displayName,
+    url: `${base}/coaches/${slug}`,
+    ...(coach.bio && { description: coach.bio }),
+    ...(coach.photoUrl && { image: coach.photoUrl }),
+    ...(coach.contactEmail && { email: coach.contactEmail }),
+    ...(coach.contactPhone && { telephone: coach.contactPhone }),
+    ...(coach.city && {
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: coach.city,
+        addressCountry: 'PH',
+      },
+    }),
+  }
 
   return (
     <main className="min-h-screen bg-base px-6 py-10 sm:py-14">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="mx-auto max-w-xl">
         <Link
           href="/coaches"
