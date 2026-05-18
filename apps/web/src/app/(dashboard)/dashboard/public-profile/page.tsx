@@ -18,6 +18,8 @@ export default async function PublicProfilePage() {
   }
 
   const isPro = user?.subscriptionTier === 'pro' || user?.subscriptionTier === 'team'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  const publicProfileUrl = `${siteUrl}/coaches/${profile.slug}`
 
   return (
     <div className="max-w-lg">
@@ -28,7 +30,14 @@ export default async function PublicProfilePage() {
         </p>
         <div className="mt-3 rounded-lg border border-border bg-surface px-4 py-3 text-sm text-text-secondary">
           Your public URL:{' '}
-          <span className="font-medium text-accent">picklecoach.com/coaches/{profile.slug}</span>
+          <a
+            href={publicProfileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-accent hover:underline"
+          >
+            {publicProfileUrl.replace(/^https?:\/\//, '')}
+          </a>
         </div>
       </div>
 
