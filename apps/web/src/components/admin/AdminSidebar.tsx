@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, CreditCard, Tag } from 'lucide-react'
+import { LayoutDashboard, Users, CreditCard, Tag, ArrowUpCircle, Settings } from 'lucide-react'
 import { apiFetch } from '@/lib/api'
 import { AdminNavItem } from './AdminNavItem'
 
@@ -10,6 +10,8 @@ const NAV_ITEMS = [
   { href: '/admin/coaches', label: 'Coaches', Icon: Users },
   { href: '/admin/subscriptions', label: 'Subscriptions', Icon: CreditCard },
   { href: '/admin/promotions', label: 'Promotions', Icon: Tag },
+  { href: '/admin/upgrade-requests', label: 'Upgrade Requests', Icon: ArrowUpCircle },
+  { href: '/admin/settings', label: 'Settings', Icon: Settings },
 ]
 
 type AdminSidebarProps = {
