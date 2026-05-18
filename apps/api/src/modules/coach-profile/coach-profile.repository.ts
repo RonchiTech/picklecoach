@@ -19,6 +19,10 @@ type UpdateData = {
   contactPhone?: string
   showContactInfo?: boolean
   isPublic?: boolean
+  ageGroups?: string[]
+  languages?: string[]
+  socialLinks?: { facebook?: string; instagram?: string; youtube?: string }
+  coachingPhilosophy?: string
 }
 
 export interface ICoachProfileRepository {

@@ -53,6 +53,7 @@ describe('GET /api/v1/dashboard/stats', () => {
       todaySessions: 0,
       totalStudents: 0,
       unpaidBalance: 0,
+      monthlyRevenue: 0,
     })
   })
 })

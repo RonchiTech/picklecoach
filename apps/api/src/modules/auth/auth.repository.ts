@@ -11,6 +11,7 @@ export interface IAuthRepository {
   }): Promise<IUser>
   emailExists(email: string): Promise<boolean>
   update(id: string, data: { name?: string; phone?: string }): Promise<IUser | null>
+  updateGoal(id: string, monthlyGoal: number): Promise<IUser | null>
   updatePassword(id: string, passwordHash: string): Promise<void>
   setResetToken(id: string, tokenHash: string, expiresAt: Date): Promise<void>
   findByResetToken(tokenHash: string): Promise<IUser | null>
@@ -43,6 +44,10 @@ export class UserRepository implements IAuthRepository {
 
   async update(id: string, data: { name?: string; phone?: string }): Promise<IUser | null> {
     return User.findByIdAndUpdate(id, { $set: data }, { new: true })
+  }
+
+  async updateGoal(id: string, monthlyGoal: number): Promise<IUser | null> {
+    return User.findByIdAndUpdate(id, { $set: { monthlyGoal } }, { new: true })
   }
 
   async updatePassword(id: string, passwordHash: string): Promise<void> {

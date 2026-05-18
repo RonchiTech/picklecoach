@@ -11,7 +11,11 @@ export class DashboardService {
     const todayEnd = new Date()
     todayEnd.setHours(23, 59, 59, 999)
 
-    const [totalStudents, todaySessions, unpaidResult] = await Promise.all([
+    const monthStart = new Date()
+    monthStart.setDate(1)
+    monthStart.setHours(0, 0, 0, 0)
+
+    const [totalStudents, todaySessions, unpaidResult, revenueResult] = await Promise.all([
       Student.countDocuments({ coachId, isActive: true }),
       Session.countDocuments({
         coachId,
@@ -27,12 +31,23 @@ export class DashboardService {
         },
         { $group: { _id: null, total: { $sum: '$amount' } } },
       ]),
+      Payment.aggregate([
+        {
+          $match: {
+            coachId: new mongoose.Types.ObjectId(coachId),
+            status: 'paid',
+            paidAt: { $gte: monthStart },
+          },
+        },
+        { $group: { _id: null, total: { $sum: '$amount' } } },
+      ]),
     ])
 
     return {
       todaySessions,
       totalStudents,
       unpaidBalance: unpaidResult[0]?.total ?? 0,
+      monthlyRevenue: revenueResult[0]?.total ?? 0,
     }
   }
 }

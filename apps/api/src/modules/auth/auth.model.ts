@@ -12,6 +12,7 @@ export interface IUser extends Document {
   subscriptionTier: SubscriptionTier
   subscriptionStatus: SubscriptionStatus
   proEndsAt?: Date
+  monthlyGoal?: number
   isPublic: boolean
   city?: string
   bio?: string
@@ -35,6 +36,7 @@ const userSchema = new Schema<IUser>(
       default: 'active',
     },
     proEndsAt: { type: Date },
+    monthlyGoal: { type: Number, min: 0 },
     isPublic: { type: Boolean, default: true },
     city: { type: String },
     bio: { type: String },

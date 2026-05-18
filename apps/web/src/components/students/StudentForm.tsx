@@ -3,7 +3,16 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { PublicStudent } from '@picklecoach/shared'
+import { REFERRAL_SOURCES } from '@picklecoach/shared'
 import { apiFetch } from '@/lib/api'
+
+const REFERRAL_LABELS: Record<string, string> = {
+  'word-of-mouth': 'Word of mouth',
+  'social-media': 'Social media',
+  directory: 'Coach directory',
+  friend: 'Friend referral',
+  other: 'Other',
+}
 
 const SKILL_LEVELS = [
   { value: 'beginner', label: 'Beginner' },
@@ -42,6 +51,7 @@ export function StudentForm({ student }: StudentFormProps) {
       phone: getValue('phone') || undefined,
       skillLevel: getValue('skillLevel'),
       notes: getValue('notes') || undefined,
+      referralSource: getValue('referralSource') || undefined,
     }
 
     try {
@@ -118,6 +128,25 @@ export function StudentForm({ student }: StudentFormProps) {
           placeholder="09171234567"
           className={INPUT_CLS}
         />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="referralSource" className={LABEL_CLS}>
+          How did they find you? <span className="text-muted">(optional)</span>
+        </label>
+        <select
+          id="referralSource"
+          name="referralSource"
+          defaultValue={student?.referralSource ?? ''}
+          className={INPUT_CLS}
+        >
+          <option value="">— Select —</option>
+          {REFERRAL_SOURCES.map((src) => (
+            <option key={src} value={src}>
+              {REFERRAL_LABELS[src] ?? src}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="flex flex-col gap-1.5">

@@ -25,6 +25,7 @@ export interface DashboardStats {
   todaySessions: number
   totalStudents: number
   unpaidBalance: number
+  monthlyRevenue: number
 }
 
 export interface PublicStudent {
@@ -36,6 +37,7 @@ export interface PublicStudent {
   skillLevel: SkillLevel
   notes?: string
   isActive: boolean
+  referralSource?: string
   createdAt: string
   updatedAt: string
 }
@@ -49,6 +51,7 @@ export interface PublicSession {
   scheduledAt: string
   durationMinutes: number
   notes?: string
+  rating?: number
   createdAt: string
   updatedAt: string
 }
@@ -76,6 +79,13 @@ export interface PublicUser {
   subscriptionTier: SubscriptionTier
   subscriptionStatus: SubscriptionStatus
   proEndsAt?: string
+  monthlyGoal?: number
+}
+
+export interface SocialLinks {
+  facebook?: string
+  instagram?: string
+  youtube?: string
 }
 
 export interface PublicCoachProfile {
@@ -96,6 +106,11 @@ export interface PublicCoachProfile {
   contactPhone?: string
   showContactInfo: boolean
   totalViews: number
+  subscriptionTier: SubscriptionTier
+  ageGroups: string[]
+  languages: string[]
+  socialLinks?: SocialLinks
+  coachingPhilosophy?: string
   createdAt: string
   updatedAt: string
 }

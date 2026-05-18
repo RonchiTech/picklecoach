@@ -1,6 +1,5 @@
 import type { CoachDirectoryQuery, CoachDirectoryResult } from '@picklecoach/shared'
-import type { IPublicCoachesRepository } from './public-coaches.repository'
-import type { ICoachProfile } from '../coach-profile/coach-profile.model'
+import type { IPublicCoachesRepository, CoachListItem } from './public-coaches.repository'
 import { createError } from '../../middleware/error.middleware'
 
 export class PublicCoachesService {
@@ -26,7 +25,7 @@ export class PublicCoachesService {
     }
   }
 
-  async getCoachBySlug(slug: string): Promise<ICoachProfile> {
+  async getCoachBySlug(slug: string): Promise<CoachListItem> {
     const profile = await this.repo.findBySlug(slug)
     if (!profile) throw createError('Coach not found', 404, 'COACH_NOT_FOUND')
     await this.repo.incrementViews(slug)

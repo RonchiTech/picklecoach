@@ -18,6 +18,10 @@ export interface ICoachProfile extends Document {
   contactPhone?: string
   showContactInfo: boolean
   totalViews: number
+  ageGroups: string[]
+  languages: string[]
+  socialLinks?: { facebook?: string; instagram?: string; youtube?: string }
+  coachingPhilosophy?: string
 }
 
 const coachProfileSchema = new Schema<ICoachProfile>(
@@ -44,6 +48,14 @@ const coachProfileSchema = new Schema<ICoachProfile>(
     contactPhone: { type: String, trim: true },
     showContactInfo: { type: Boolean, default: false },
     totalViews: { type: Number, default: 0 },
+    ageGroups: { type: [String], default: [] },
+    languages: { type: [String], default: [] },
+    socialLinks: {
+      facebook: { type: String },
+      instagram: { type: String },
+      youtube: { type: String },
+    },
+    coachingPhilosophy: { type: String },
   },
   { timestamps: true }
 )

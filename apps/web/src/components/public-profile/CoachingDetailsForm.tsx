@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { PublicCoachProfile } from '@picklecoach/shared'
-import { SPECIALIZATIONS } from '@picklecoach/shared'
+import { SPECIALIZATIONS, AGE_GROUPS, LANGUAGES } from '@picklecoach/shared'
 import { apiFetch } from '@/lib/api'
 
 const SPEC_LABELS: Record<string, string> = {
@@ -18,19 +18,47 @@ const SPEC_LABELS: Record<string, string> = {
   singles: 'Singles',
 }
 
-export function CoachingDetailsForm({ profile }: { profile: PublicCoachProfile }) {
+const AGE_LABELS: Record<string, string> = {
+  kids: 'Kids',
+  teens: 'Teens',
+  adults: 'Adults',
+  seniors: 'Seniors',
+}
+
+const LANG_LABELS: Record<string, string> = {
+  filipino: 'Filipino',
+  english: 'English',
+  cebuano: 'Cebuano',
+  ilocano: 'Ilocano',
+  hiligaynon: 'Hiligaynon',
+  bisaya: 'Bisaya',
+}
+
+function ProBadge() {
+  return (
+    <span className="ml-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-base uppercase tracking-wide">
+      Pro
+    </span>
+  )
+}
+
+export function CoachingDetailsForm({
+  profile,
+  isPro,
+}: {
+  profile: PublicCoachProfile
+  isPro: boolean
+}) {
   const [specs, setSpecs] = useState<string[]>(profile.specializations)
   const [types, setTypes] = useState<string[]>(profile.sessionTypes)
+  const [ageGroups, setAgeGroups] = useState<string[]>(profile.ageGroups ?? [])
+  const [languages, setLanguages] = useState<string[]>(profile.languages ?? [])
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  function toggleSpec(value: string) {
-    setSpecs((prev) => (prev.includes(value) ? prev.filter((s) => s !== value) : [...prev, value]))
-  }
-
-  function toggleType(value: string) {
-    setTypes((prev) => (prev.includes(value) ? prev.filter((t) => t !== value) : [...prev, value]))
+  function toggle(list: string[], setList: (v: string[]) => void, value: string) {
+    setList(list.includes(value) ? list.filter((s) => s !== value) : [...list, value])
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -39,10 +67,12 @@ export function CoachingDetailsForm({ profile }: { profile: PublicCoachProfile }
     setSuccess(false)
     setLoading(true)
     try {
-      await apiFetch('/api/v1/coach-profiles/me', {
-        method: 'PATCH',
-        body: { specializations: specs, sessionTypes: types },
-      })
+      const body: Record<string, unknown> = { specializations: specs, sessionTypes: types }
+      if (isPro) {
+        body.ageGroups = ageGroups
+        body.languages = languages
+      }
+      await apiFetch('/api/v1/coach-profiles/me', { method: 'PATCH', body })
       setSuccess(true)
       setTimeout(() => setSuccess(false), 3000)
     } catch (err) {
@@ -61,7 +91,7 @@ export function CoachingDetailsForm({ profile }: { profile: PublicCoachProfile }
             <button
               key={spec}
               type="button"
-              onClick={() => toggleSpec(spec)}
+              onClick={() => toggle(specs, setSpecs, spec)}
               className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
                 specs.includes(spec)
                   ? 'bg-accent text-base'
@@ -81,7 +111,7 @@ export function CoachingDetailsForm({ profile }: { profile: PublicCoachProfile }
             <button
               key={type}
               type="button"
-              onClick={() => toggleType(type)}
+              onClick={() => toggle(types, setTypes, type)}
               className={`rounded-full px-3 py-1 text-xs font-semibold capitalize transition-colors ${
                 types.includes(type)
                   ? 'bg-accent text-base'
@@ -92,6 +122,62 @@ export function CoachingDetailsForm({ profile }: { profile: PublicCoachProfile }
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <span className="flex items-center text-sm font-medium text-text-secondary">
+          Age groups you coach
+          {!isPro && <ProBadge />}
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {[...AGE_GROUPS].map((group) => (
+            <button
+              key={group}
+              type="button"
+              disabled={!isPro}
+              onClick={() => toggle(ageGroups, setAgeGroups, group)}
+              className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                ageGroups.includes(group)
+                  ? 'bg-accent text-base'
+                  : 'bg-surface border border-border text-text-secondary hover:border-accent'
+              }`}
+            >
+              {AGE_LABELS[group]}
+            </button>
+          ))}
+        </div>
+        {!isPro && (
+          <p className="text-xs text-text-secondary">
+            Upgrade to Pro to set age group preferences.
+          </p>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <span className="flex items-center text-sm font-medium text-text-secondary">
+          Languages spoken
+          {!isPro && <ProBadge />}
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {[...LANGUAGES].map((lang) => (
+            <button
+              key={lang}
+              type="button"
+              disabled={!isPro}
+              onClick={() => toggle(languages, setLanguages, lang)}
+              className={`rounded-full px-3 py-1 text-xs font-semibold capitalize transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                languages.includes(lang)
+                  ? 'bg-accent text-base'
+                  : 'bg-surface border border-border text-text-secondary hover:border-accent'
+              }`}
+            >
+              {LANG_LABELS[lang]}
+            </button>
+          ))}
+        </div>
+        {!isPro && (
+          <p className="text-xs text-text-secondary">Upgrade to Pro to list spoken languages.</p>
+        )}
       </div>
 
       {error && <p className="text-error text-sm">{error}</p>}

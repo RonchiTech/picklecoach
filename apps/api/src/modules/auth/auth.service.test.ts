@@ -27,6 +27,7 @@ const mockRepo: jest.Mocked<IAuthRepository> = {
   create: jest.fn(),
   emailExists: jest.fn(),
   update: jest.fn(),
+  updateGoal: jest.fn(),
   updatePassword: jest.fn(),
   setResetToken: jest.fn(),
   findByResetToken: jest.fn(),
