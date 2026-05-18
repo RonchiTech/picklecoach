@@ -33,10 +33,20 @@ export class AdminRepository {
     }))
   }
 
-  async updateCoachSubscription(coachId: string, tier: SubscriptionTier): Promise<void> {
-    await User.findByIdAndUpdate(coachId, {
+  async updateCoachSubscription(
+    coachId: string,
+    tier: SubscriptionTier,
+    proEndsAt?: string
+  ): Promise<void> {
+    const update: Record<string, unknown> = {
       subscriptionTier: tier,
       subscriptionStatus: 'active',
-    })
+    }
+    if (tier === 'pro' && proEndsAt) {
+      update.proEndsAt = new Date(proEndsAt)
+    } else if (tier === 'starter') {
+      update.proEndsAt = null
+    }
+    await User.findByIdAndUpdate(coachId, { $set: update })
   }
 }

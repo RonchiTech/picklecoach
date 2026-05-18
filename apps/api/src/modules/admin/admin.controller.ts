@@ -29,8 +29,8 @@ export class AdminController {
     next: NextFunction
   ): Promise<void> => {
     try {
-      const { tier } = updateCoachSubscriptionSchema.parse(req.body)
-      await this.repo.updateCoachSubscription(req.params.id, tier)
+      const { tier, proEndsAt } = updateCoachSubscriptionSchema.parse(req.body)
+      await this.repo.updateCoachSubscription(req.params.id, tier, proEndsAt)
       res.json({ success: true, data: { message: 'Subscription updated' } })
     } catch (err) {
       next(err)
