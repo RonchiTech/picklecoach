@@ -1,4 +1,5 @@
 import type { PublicCoachProfile, PublicUser } from '@picklecoach/shared'
+import Link from 'next/link'
 import { serverApiFetch } from '@/lib/server-api'
 import { IdentityForm } from '@/components/public-profile/IdentityForm'
 import { CoachingDetailsForm } from '@/components/public-profile/CoachingDetailsForm'
@@ -30,14 +31,14 @@ export default async function PublicProfilePage() {
         </p>
         <div className="mt-3 rounded-lg border border-border bg-surface px-4 py-3 text-sm text-text-secondary">
           Your public URL:{' '}
-          <a
-            href={publicProfileUrl}
+          <Link
+            href={`/coaches/${profile.slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-accent hover:underline"
+            className="font-medium text-accent underline"
           >
             {publicProfileUrl.replace(/^https?:\/\//, '')}
-          </a>
+          </Link>
         </div>
       </div>
 
