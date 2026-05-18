@@ -2,7 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { PublicPromotion, DiscountType, SubscriptionTier } from '@picklecoach/shared'
+import type {
+  DiscountType,
+  PublicPromotion,
+  PublicRedemption,
+  SubscriptionTier,
+} from '@picklecoach/shared'
 import { apiFetch } from '@/lib/api'
 
 const TIER_OPTIONS: SubscriptionTier[] = ['starter', 'pro', 'team']
@@ -30,6 +35,10 @@ export function AdminPromoList({ initialPromos }: { initialPromos: PublicPromoti
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
   const [deactivatingId, setDeactivatingId] = useState<string | null>(null)
+  const [redemptionsById, setRedemptionsById] = useState<Record<string, PublicRedemption[] | null>>(
+    {}
+  )
+  const [loadingRedemptions, setLoadingRedemptions] = useState<string | null>(null)
   const router = useRouter()
 
   const toggleTier = (tier: SubscriptionTier) => {
@@ -74,6 +83,28 @@ export function AdminPromoList({ initialPromos }: { initialPromos: PublicPromoti
       router.refresh()
     } finally {
       setDeactivatingId(null)
+    }
+  }
+
+  const handleViewRedemptions = async (promoId: string) => {
+    if (redemptionsById[promoId] !== undefined) {
+      setRedemptionsById((prev) => {
+        const next = { ...prev }
+        delete next[promoId]
+        return next
+      })
+      return
+    }
+    setLoadingRedemptions(promoId)
+    try {
+      const res = await apiFetch<{ success: true; data: PublicRedemption[] }>(
+        `/api/v1/promotions/${promoId}/redemptions`
+      )
+      setRedemptionsById((prev) => ({ ...prev, [promoId]: res.data }))
+    } catch {
+      setRedemptionsById((prev) => ({ ...prev, [promoId]: null }))
+    } finally {
+      setLoadingRedemptions(null)
     }
   }
 
@@ -212,44 +243,95 @@ export function AdminPromoList({ initialPromos }: { initialPromos: PublicPromoti
             </thead>
             <tbody>
               {initialPromos.map((promo, i) => (
-                <tr
-                  key={promo._id}
-                  className={`border-b border-border last:border-0 ${i % 2 === 0 ? '' : 'bg-surface/50'}`}
-                >
-                  <td className="px-4 py-3 font-mono text-sm font-semibold text-text-primary">
-                    {promo.code}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-text-secondary">
-                    {promo.discountType === 'percentage'
-                      ? `${promo.discountValue}%`
-                      : `₱${promo.discountValue}`}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-text-secondary">
-                    {promo.applicableTiers.join(', ')}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-text-secondary">
-                    {promo.currentRedemptions}
-                    {promo.maxRedemptions ? ` / ${promo.maxRedemptions}` : ''}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${promo.isActive ? 'bg-green-500/10 text-green-400' : 'bg-muted/10 text-muted'}`}
-                    >
-                      {promo.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {promo.isActive && (
-                      <button
-                        onClick={() => handleDeactivate(promo._id)}
-                        disabled={deactivatingId === promo._id}
-                        className="rounded-md border border-border px-3 py-1 text-xs text-text-secondary transition-colors hover:border-error hover:text-error disabled:opacity-50"
+                <>
+                  <tr
+                    key={promo._id}
+                    className={`border-b border-border last:border-0 ${i % 2 === 0 ? '' : 'bg-surface/50'}`}
+                  >
+                    <td className="px-4 py-3 font-mono text-sm font-semibold text-text-primary">
+                      {promo.code}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-text-secondary">
+                      {promo.discountType === 'percentage'
+                        ? `${promo.discountValue}%`
+                        : `₱${promo.discountValue}`}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-text-secondary">
+                      {promo.applicableTiers.join(', ')}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-text-secondary">
+                      {promo.currentRedemptions}
+                      {promo.maxRedemptions ? ` / ${promo.maxRedemptions}` : ''}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${promo.isActive ? 'bg-green-500/10 text-green-400' : 'bg-muted/10 text-muted'}`}
                       >
-                        {deactivatingId === promo._id ? 'Deactivating…' : 'Deactivate'}
+                        {promo.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => handleViewRedemptions(promo._id)}
+                        disabled={loadingRedemptions === promo._id}
+                        className="mr-2 rounded-md border border-border px-3 py-1 text-xs text-text-secondary transition-colors hover:border-accent hover:text-accent disabled:opacity-50"
+                      >
+                        {loadingRedemptions === promo._id
+                          ? '…'
+                          : redemptionsById[promo._id] !== undefined
+                            ? 'Hide'
+                            : 'Redemptions'}
                       </button>
-                    )}
-                  </td>
-                </tr>
+                      {promo.isActive && (
+                        <button
+                          onClick={() => handleDeactivate(promo._id)}
+                          disabled={deactivatingId === promo._id}
+                          className="rounded-md border border-border px-3 py-1 text-xs text-text-secondary transition-colors hover:border-error hover:text-error disabled:opacity-50"
+                        >
+                          {deactivatingId === promo._id ? 'Deactivating…' : 'Deactivate'}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                  {redemptionsById[promo._id] !== undefined && (
+                    <tr key={`${promo._id}-redemptions`} className="bg-surface/30">
+                      <td colSpan={6} className="px-4 py-3">
+                        {redemptionsById[promo._id] === null ? (
+                          <p className="text-xs text-error">Failed to load redemptions.</p>
+                        ) : redemptionsById[promo._id]!.length === 0 ? (
+                          <p className="text-xs text-muted">No redemptions yet.</p>
+                        ) : (
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="text-left text-muted">
+                                <th className="pb-1 pr-4">Coach</th>
+                                <th className="pb-1 pr-4">Email</th>
+                                <th className="pb-1 pr-4">Discount</th>
+                                <th className="pb-1">Date</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {redemptionsById[promo._id]!.map((r) => (
+                                <tr key={r._id} className="text-text-secondary">
+                                  <td className="py-0.5 pr-4">{r.coachName}</td>
+                                  <td className="py-0.5 pr-4">{r.coachEmail}</td>
+                                  <td className="py-0.5 pr-4">₱{r.discountApplied}</td>
+                                  <td className="py-0.5">
+                                    {new Date(r.redeemedAt).toLocaleDateString('en-PH', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                      day: 'numeric',
+                                    })}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))}
             </tbody>
           </table>
