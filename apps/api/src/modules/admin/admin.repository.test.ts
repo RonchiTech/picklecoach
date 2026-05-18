@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { User } from '../auth/auth.model'
+import { UpgradeRequest } from '../upgrade-request/upgrade-request.model'
 import { AdminRepository } from './admin.repository'
 
 const TEST_DB = 'mongodb://localhost:27017/picklecoach_test'
@@ -10,10 +11,12 @@ beforeAll(async () => {
 })
 afterAll(async () => {
   await User.deleteMany({})
+  await UpgradeRequest.deleteMany({})
   await mongoose.disconnect()
 })
 beforeEach(async () => {
   await User.deleteMany({})
+  await UpgradeRequest.deleteMany({})
 })
 
 const seedCoach = (overrides: Record<string, unknown> = {}) =>
@@ -99,5 +102,46 @@ describe('AdminRepository.updateCoachSubscription', () => {
   it('does nothing and does not throw for unknown id', async () => {
     const fakeId = new mongoose.Types.ObjectId().toString()
     await expect(repo.updateCoachSubscription(fakeId, 'pro')).resolves.not.toThrow()
+  })
+})
+
+describe('AdminRepository.getRevenueSummary', () => {
+  it('returns empty array when no approved upgrade requests exist', async () => {
+    const result = await repo.getRevenueSummary()
+    expect(result).toEqual([])
+  })
+
+  it('returns monthly revenue for approved upgrade requests', async () => {
+    const coach = await seedCoach({ subscriptionTier: 'pro' })
+    const reviewedAt = new Date('2026-05-01')
+    await UpgradeRequest.create({
+      coachId: coach._id,
+      months: 3,
+      amountDue: 399,
+      discountApplied: 0,
+      receiptUrl: 'https://example.com/r.jpg',
+      status: 'approved',
+      reviewedAt,
+      reviewedBy: coach._id,
+    })
+    const result = await repo.getRevenueSummary()
+    expect(result).toHaveLength(1)
+    expect(result[0].month).toBe('2026-05')
+    expect(result[0].revenue).toBe(399)
+    expect(result[0].count).toBe(1)
+  })
+
+  it('excludes pending and rejected requests from revenue', async () => {
+    const coach = await seedCoach()
+    await UpgradeRequest.create({
+      coachId: coach._id,
+      months: 1,
+      amountDue: 149,
+      discountApplied: 0,
+      receiptUrl: 'https://example.com/r.jpg',
+      status: 'pending',
+    })
+    const result = await repo.getRevenueSummary()
+    expect(result).toEqual([])
   })
 })

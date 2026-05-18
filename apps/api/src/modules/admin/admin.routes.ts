@@ -11,6 +11,7 @@ const controller = new AdminController(repo)
 router.use(authenticate, requireRole('super_admin'))
 
 router.get('/stats', controller.getStats)
+router.get('/revenue', controller.getRevenueSummary)
 router.get('/coaches', controller.listCoaches)
 router.patch('/coaches/:id/subscription', controller.updateCoachSubscription)
 router.use('/settings', adminSettingsRoutes)

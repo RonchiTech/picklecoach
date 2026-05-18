@@ -36,4 +36,13 @@ export class AdminController {
       next(err)
     }
   }
+
+  getRevenueSummary = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const data = await this.repo.getRevenueSummary()
+      res.json({ success: true, data })
+    } catch (err) {
+      next(err)
+    }
+  }
 }

@@ -197,3 +197,9 @@ export interface AdminStats {
   activeTrials: number
   activeSubscriptions: number
 }
+
+export interface AdminRevenueMonth {
+  month: string
+  revenue: number
+  count: number
+}

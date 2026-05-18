@@ -1,5 +1,11 @@
-import type { AdminCoach, AdminStats, SubscriptionTier } from '@picklecoach/shared'
+import type {
+  AdminCoach,
+  AdminRevenueMonth,
+  AdminStats,
+  SubscriptionTier,
+} from '@picklecoach/shared'
 import { User } from '../auth/auth.model'
+import { UpgradeRequest } from '../upgrade-request/upgrade-request.model'
 
 export class AdminRepository {
   async getStats(): Promise<AdminStats> {
@@ -48,5 +54,22 @@ export class AdminRepository {
       update.proEndsAt = null
     }
     await User.findByIdAndUpdate(coachId, { $set: update })
+  }
+
+  async getRevenueSummary(): Promise<AdminRevenueMonth[]> {
+    type AggRow = { _id: string; revenue: number; count: number }
+    const rows = await UpgradeRequest.aggregate<AggRow>([
+      { $match: { status: 'approved' } },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m', date: '$reviewedAt' } },
+          revenue: { $sum: '$amountDue' },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: -1 } },
+      { $limit: 12 },
+    ])
+    return rows.map((r) => ({ month: r._id, revenue: r.revenue, count: r.count }))
   }
 }
