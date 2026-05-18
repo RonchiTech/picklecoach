@@ -25,6 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: 'PickleCoach',
+    locale: 'en_PH',
     title: 'PickleCoach — Coaching, not paperwork.',
     description:
       'PickleCoach helps Filipino pickleball coaches manage students, sessions, and payments — all in one place.',

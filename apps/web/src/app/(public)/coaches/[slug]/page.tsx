@@ -63,11 +63,15 @@ export default async function CoachProfilePage({ params }: { params: Promise<{ s
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: coach.displayName,
+    jobTitle: 'Pickleball Coach',
     url: `${base}/coaches/${slug}`,
     ...(coach.bio && { description: coach.bio }),
     ...(coach.photoUrl && { image: coach.photoUrl }),
     ...(coach.contactEmail && { email: coach.contactEmail }),
     ...(coach.contactPhone && { telephone: coach.contactPhone }),
+    ...(coach.specializations.length > 0 && {
+      knowsAbout: coach.specializations.map((s) => SPEC_LABELS[s] ?? s),
+    }),
     ...(coach.city && {
       address: {
         '@type': 'PostalAddress',

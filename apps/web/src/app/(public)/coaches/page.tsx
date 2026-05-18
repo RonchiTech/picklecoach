@@ -16,6 +16,9 @@ export const metadata: Metadata = {
       'Browse certified pickleball coaches in the Philippines. Filter by specialization, city, or session type.',
     url: '/coaches',
   },
+  alternates: {
+    canonical: '/coaches',
+  },
 }
 
 type SearchParams = Promise<{
