@@ -15,6 +15,7 @@ export const updateSessionSchema = z.object({
   scheduledAt: z.string().datetime().optional(),
   durationMinutes: z.number().int().min(15).max(480).optional(),
   notes: z.string().max(1000).optional(),
+  rating: z.number().int().min(1).max(5).optional(),
 })
 
 export type CreateSessionInput = z.infer<typeof createSessionSchema>
