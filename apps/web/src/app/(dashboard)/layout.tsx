@@ -6,6 +6,7 @@ import { Sidebar } from '@/components/dashboard/Sidebar'
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const user = await serverApiFetch<PublicUser>('/api/v1/auth/me')
   if (!user) redirect('/login')
+  if (user.role === 'super_admin') redirect('/admin')
 
   return (
     <div className="flex h-screen bg-base">
