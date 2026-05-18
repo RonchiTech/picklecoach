@@ -10,6 +10,7 @@ export interface IStudent extends Document {
   skillLevel: SkillLevel
   notes?: string
   isActive: boolean
+  referralSource?: string
 }
 
 const studentSchema = new Schema<IStudent>(
@@ -25,6 +26,7 @@ const studentSchema = new Schema<IStudent>(
     },
     notes: { type: String },
     isActive: { type: Boolean, default: true },
+    referralSource: { type: String },
   },
   { timestamps: true }
 )
