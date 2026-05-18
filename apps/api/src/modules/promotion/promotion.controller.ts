@@ -1,14 +1,18 @@
 import type { Request, Response, NextFunction } from 'express'
-import { applyPromoSchema, createPromotionSchema, updatePromotionSchema } from '@picklecoach/shared'
+import {
+  createPromotionSchema,
+  updatePromotionSchema,
+  validatePromoSchema,
+} from '@picklecoach/shared'
 import type { PromotionService } from './promotion.service'
 
 export class PromotionController {
   constructor(private service: PromotionService) {}
 
-  apply = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  validate = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { code } = applyPromoSchema.parse(req.body)
-      const result = await this.service.apply(code, req.user!.userId)
+      const { code, months } = validatePromoSchema.parse(req.body)
+      const result = await this.service.validate(code, months)
       res.json({ success: true, data: result })
     } catch (err) {
       next(err)

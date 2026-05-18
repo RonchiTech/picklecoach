@@ -1,11 +1,9 @@
 import mongoose from 'mongoose'
 import { Promotion, Redemption } from './promotion.model'
-import { PromotionRepository, UserUpgradeRepository } from './promotion.repository'
-import { User } from '../auth/auth.model'
+import { PromotionRepository } from './promotion.repository'
 
 const TEST_DB = 'mongodb://localhost:27017/picklecoach_test'
 const promoRepo = new PromotionRepository()
-const userRepo = new UserUpgradeRepository()
 
 const ADMIN_ID = new mongoose.Types.ObjectId().toString()
 const COACH_ID = new mongoose.Types.ObjectId().toString()
@@ -28,13 +26,11 @@ beforeAll(async () => {
 afterAll(async () => {
   await Promotion.deleteMany({})
   await Redemption.deleteMany({})
-  await User.deleteMany({})
   await mongoose.disconnect()
 })
 beforeEach(async () => {
   await Promotion.deleteMany({})
   await Redemption.deleteMany({})
-  await User.deleteMany({})
 })
 
 describe('PromotionRepository.findByCode', () => {
@@ -144,21 +140,5 @@ describe('PromotionRepository.incrementRedemptions', () => {
     await promoRepo.incrementRedemptions(promo._id.toString())
     const found = await Promotion.findById(promo._id)
     expect(found?.currentRedemptions).toBe(3)
-  })
-})
-
-describe('UserUpgradeRepository.upgradeTier', () => {
-  it('sets subscriptionTier and subscriptionStatus to active on the user', async () => {
-    const user = await User.create({
-      name: 'Coach',
-      email: 'coach@test.com',
-      passwordHash: 'hash',
-      subscriptionTier: 'starter',
-      subscriptionStatus: 'active',
-    })
-    await userRepo.upgradeTier(user._id.toString(), 'pro')
-    const updated = await User.findById(user._id)
-    expect(updated?.subscriptionTier).toBe('pro')
-    expect(updated?.subscriptionStatus).toBe('active')
   })
 })

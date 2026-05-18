@@ -61,51 +61,35 @@ async function seedPromo(overrides: Record<string, unknown> = {}) {
   })
 }
 
-describe('POST /api/v1/promotions/apply', () => {
+describe('POST /api/v1/promotions/validate', () => {
   it('returns 401 without auth', async () => {
-    const res = await request(app).post('/api/v1/promotions/apply').send({ code: 'TEST' })
+    const res = await request(app)
+      .post('/api/v1/promotions/validate')
+      .send({ code: 'TEST', months: 1 })
     expect(res.status).toBe(401)
   })
 
   it('returns 404 PROMO_NOT_FOUND for unknown code', async () => {
     const cookies = await registerAndLogin()
     const res = await request(app)
-      .post('/api/v1/promotions/apply')
+      .post('/api/v1/promotions/validate')
       .set('Cookie', cookies)
-      .send({ code: 'UNKNOWN' })
+      .send({ code: 'UNKNOWN', months: 1 })
     expect(res.status).toBe(404)
     expect(res.body.error.code).toBe('PROMO_NOT_FOUND')
   })
 
-  it('applies promo, upgrades tier to pro, and records redemption', async () => {
-    const cookies = await registerAndLogin('procoach@test.com')
-    await seedPromo({ code: 'GOPRO', applicableTiers: ['pro'] })
+  it('returns ValidatePromoResult with discounted amount', async () => {
+    const cookies = await registerAndLogin()
+    await seedPromo({ code: 'SAVE20', discountType: 'percentage', discountValue: 20 })
     const res = await request(app)
-      .post('/api/v1/promotions/apply')
+      .post('/api/v1/promotions/validate')
       .set('Cookie', cookies)
-      .send({ code: 'GOPRO' })
+      .send({ code: 'SAVE20', months: 1 })
     expect(res.status).toBe(200)
-    expect(res.body.data.tier).toBe('pro')
-    expect(res.body.data.discountApplied).toBe(20)
-
-    const user = await User.findOne({ email: 'procoach@test.com' })
-    expect(user?.subscriptionTier).toBe('pro')
-    expect(user?.subscriptionStatus).toBe('active')
-  })
-
-  it('returns 409 PROMO_ALREADY_REDEEMED on second apply', async () => {
-    const cookies = await registerAndLogin('twice@test.com')
-    await seedPromo({ code: 'ONCE' })
-    await request(app)
-      .post('/api/v1/promotions/apply')
-      .set('Cookie', cookies)
-      .send({ code: 'ONCE' })
-    const res = await request(app)
-      .post('/api/v1/promotions/apply')
-      .set('Cookie', cookies)
-      .send({ code: 'ONCE' })
-    expect(res.status).toBe(409)
-    expect(res.body.error.code).toBe('PROMO_ALREADY_REDEEMED')
+    expect(res.body.data.baseAmount).toBe(149)
+    expect(res.body.data.finalAmount).toBe(119) // 149 * 0.8 = 119.2 → floor = 119
+    expect(res.body.data.code).toBe('SAVE20')
   })
 })
 

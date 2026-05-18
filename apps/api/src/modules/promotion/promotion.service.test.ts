@@ -1,9 +1,8 @@
 import { PromotionService } from './promotion.service'
-import type { IPromotionRepository, IUserUpgradeRepository } from './promotion.repository'
-import type { IPromotion, IRedemption } from './promotion.model'
+import type { IPromotionRepository } from './promotion.repository'
+import type { IPromotion } from './promotion.model'
 import mongoose from 'mongoose'
 
-const COACH_ID = new mongoose.Types.ObjectId().toString()
 const ADMIN_ID = new mongoose.Types.ObjectId().toString()
 const PROMO_ID = new mongoose.Types.ObjectId().toString()
 
@@ -20,13 +19,6 @@ const mockPromo = {
   createdBy: { toString: () => ADMIN_ID },
 } as unknown as IPromotion
 
-const mockRedemption = {
-  promotionId: { toString: () => PROMO_ID },
-  coachId: { toString: () => COACH_ID },
-  discountApplied: 50,
-  redeemedAt: new Date(),
-} as unknown as IRedemption
-
 const mockPromoRepo: jest.Mocked<IPromotionRepository> = {
   findByCode: jest.fn(),
   findAll: jest.fn(),
@@ -38,21 +30,17 @@ const mockPromoRepo: jest.Mocked<IPromotionRepository> = {
   incrementRedemptions: jest.fn(),
 }
 
-const mockUserRepo: jest.Mocked<IUserUpgradeRepository> = {
-  upgradeTier: jest.fn(),
-}
-
 let service: PromotionService
 
 beforeEach(() => {
   jest.clearAllMocks()
-  service = new PromotionService(mockPromoRepo, mockUserRepo)
+  service = new PromotionService(mockPromoRepo)
 })
 
-describe('PromotionService.apply', () => {
+describe('PromotionService.validate', () => {
   it('throws PROMO_NOT_FOUND when code does not exist', async () => {
     mockPromoRepo.findByCode.mockResolvedValue(null)
-    await expect(service.apply('BADCODE', COACH_ID)).rejects.toMatchObject({
+    await expect(service.validate('BADCODE', 1)).rejects.toMatchObject({
       statusCode: 404,
       code: 'PROMO_NOT_FOUND',
     })
@@ -63,7 +51,7 @@ describe('PromotionService.apply', () => {
       ...mockPromo,
       isActive: false,
     } as unknown as IPromotion)
-    await expect(service.apply('LAUNCH50', COACH_ID)).rejects.toMatchObject({
+    await expect(service.validate('LAUNCH50', 1)).rejects.toMatchObject({
       statusCode: 404,
       code: 'PROMO_NOT_FOUND',
     })
@@ -75,7 +63,7 @@ describe('PromotionService.apply', () => {
       expiresAt: new Date(Date.now() - 1000),
     } as unknown as IPromotion
     mockPromoRepo.findByCode.mockResolvedValue(expired)
-    await expect(service.apply('LAUNCH50', COACH_ID)).rejects.toMatchObject({
+    await expect(service.validate('LAUNCH50', 1)).rejects.toMatchObject({
       statusCode: 400,
       code: 'PROMO_EXPIRED',
     })
@@ -88,38 +76,32 @@ describe('PromotionService.apply', () => {
       currentRedemptions: 10,
     } as unknown as IPromotion
     mockPromoRepo.findByCode.mockResolvedValue(maxed)
-    await expect(service.apply('LAUNCH50', COACH_ID)).rejects.toMatchObject({
+    await expect(service.validate('LAUNCH50', 1)).rejects.toMatchObject({
       statusCode: 400,
       code: 'PROMO_MAX_REACHED',
     })
   })
 
-  it('throws PROMO_ALREADY_REDEEMED when coach already used the code', async () => {
+  it('returns ValidatePromoResult with correct amount for percentage discount', async () => {
     mockPromoRepo.findByCode.mockResolvedValue(mockPromo)
-    mockPromoRepo.hasCoachRedeemed.mockResolvedValue(true)
-    await expect(service.apply('LAUNCH50', COACH_ID)).rejects.toMatchObject({
-      statusCode: 409,
-      code: 'PROMO_ALREADY_REDEEMED',
-    })
+    const result = await service.validate('LAUNCH50', 3)
+    // 3 months = 399, 50% off = 199
+    expect(result.baseAmount).toBe(399)
+    expect(result.finalAmount).toBe(199)
+    expect(result.discountType).toBe('percentage')
   })
 
-  it('creates redemption, increments counter, upgrades tier, and returns result', async () => {
-    mockPromoRepo.findByCode.mockResolvedValue(mockPromo)
-    mockPromoRepo.hasCoachRedeemed.mockResolvedValue(false)
-    mockPromoRepo.createRedemption.mockResolvedValue(mockRedemption)
-    mockPromoRepo.incrementRedemptions.mockResolvedValue()
-    mockUserRepo.upgradeTier.mockResolvedValue()
-
-    const result = await service.apply('LAUNCH50', COACH_ID)
-
-    expect(mockPromoRepo.createRedemption).toHaveBeenCalledWith({
-      promotionId: PROMO_ID,
-      coachId: COACH_ID,
-      discountApplied: 50,
-    })
-    expect(mockPromoRepo.incrementRedemptions).toHaveBeenCalledWith(PROMO_ID)
-    expect(mockUserRepo.upgradeTier).toHaveBeenCalledWith(COACH_ID, 'pro')
-    expect(result).toEqual({ tier: 'pro', discountApplied: 50 })
+  it('returns ValidatePromoResult with correct amount for fixed discount', async () => {
+    const fixedPromo = {
+      ...mockPromo,
+      discountType: 'fixed',
+      discountValue: 50,
+    } as unknown as IPromotion
+    mockPromoRepo.findByCode.mockResolvedValue(fixedPromo)
+    const result = await service.validate('LAUNCH50', 1)
+    // 1 month = 149, fixed 50 off = 99
+    expect(result.baseAmount).toBe(149)
+    expect(result.finalAmount).toBe(99)
   })
 })
 
@@ -136,12 +118,7 @@ describe('PromotionService.create', () => {
   it('calls repo.create with normalized code and returns promotion', async () => {
     mockPromoRepo.create.mockResolvedValue(mockPromo)
     const result = await service.create(
-      {
-        code: 'LAUNCH50',
-        discountType: 'percentage',
-        discountValue: 50,
-        applicableTiers: ['pro'],
-      },
+      { code: 'LAUNCH50', discountType: 'percentage', discountValue: 50, applicableTiers: ['pro'] },
       ADMIN_ID
     )
     expect(mockPromoRepo.create).toHaveBeenCalledWith(

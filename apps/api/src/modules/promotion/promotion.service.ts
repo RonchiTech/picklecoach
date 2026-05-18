@@ -1,20 +1,17 @@
 import type {
   CreatePromotionInput,
   UpdatePromotionInput,
-  SubscriptionTier,
-  ApplyPromoResult,
+  ValidatePromoResult,
 } from '@picklecoach/shared'
-import type { IPromotionRepository, IUserUpgradeRepository } from './promotion.repository'
+import { BUNDLE_PRICES } from '@picklecoach/shared'
+import type { IPromotionRepository } from './promotion.repository'
 import type { IPromotion } from './promotion.model'
 import { createError } from '../../middleware/error.middleware'
 
 export class PromotionService {
-  constructor(
-    private promoRepo: IPromotionRepository,
-    private userRepo: IUserUpgradeRepository
-  ) {}
+  constructor(private promoRepo: IPromotionRepository) {}
 
-  async apply(code: string, coachId: string): Promise<ApplyPromoResult> {
+  async validate(code: string, months: number): Promise<ValidatePromoResult> {
     const promo = await this.promoRepo.findByCode(code)
     if (!promo || !promo.isActive) throw createError('Promo code not found', 404, 'PROMO_NOT_FOUND')
 
@@ -30,22 +27,21 @@ export class PromotionService {
       )
     }
 
-    const alreadyRedeemed = await this.promoRepo.hasCoachRedeemed(promo._id.toString(), coachId)
-    if (alreadyRedeemed) {
-      throw createError('You have already redeemed this promo code', 409, 'PROMO_ALREADY_REDEEMED')
+    const baseAmount = BUNDLE_PRICES[months] ?? 149
+    let finalAmount: number
+    if (promo.discountType === 'percentage') {
+      finalAmount = Math.floor(baseAmount * (1 - promo.discountValue / 100))
+    } else {
+      finalAmount = Math.max(0, baseAmount - promo.discountValue)
     }
 
-    await this.promoRepo.createRedemption({
-      promotionId: promo._id.toString(),
-      coachId,
-      discountApplied: promo.discountValue,
-    })
-    await this.promoRepo.incrementRedemptions(promo._id.toString())
-
-    const tier = promo.applicableTiers[0] as SubscriptionTier
-    await this.userRepo.upgradeTier(coachId, tier)
-
-    return { tier, discountApplied: promo.discountValue }
+    return {
+      code: promo.code,
+      discountType: promo.discountType,
+      discountValue: promo.discountValue,
+      baseAmount,
+      finalAmount,
+    }
   }
 
   async list(): Promise<IPromotion[]> {

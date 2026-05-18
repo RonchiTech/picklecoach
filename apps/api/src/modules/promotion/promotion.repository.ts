@@ -1,7 +1,6 @@
-import type { SubscriptionTier, UpdatePromotionInput } from '@picklecoach/shared'
+import type { UpdatePromotionInput } from '@picklecoach/shared'
 import { Promotion, Redemption } from './promotion.model'
 import type { IPromotion, IRedemption } from './promotion.model'
-import { User } from '../auth/auth.model'
 
 type CreatePromotionData = {
   code: string
@@ -63,15 +62,5 @@ export class PromotionRepository implements IPromotionRepository {
 
   async incrementRedemptions(promotionId: string): Promise<void> {
     await Promotion.findByIdAndUpdate(promotionId, { $inc: { currentRedemptions: 1 } })
-  }
-}
-
-export interface IUserUpgradeRepository {
-  upgradeTier(userId: string, tier: SubscriptionTier): Promise<void>
-}
-
-export class UserUpgradeRepository implements IUserUpgradeRepository {
-  async upgradeTier(userId: string, tier: SubscriptionTier): Promise<void> {
-    await User.findByIdAndUpdate(userId, { subscriptionTier: tier, subscriptionStatus: 'active' })
   }
 }
