@@ -1,6 +1,5 @@
 import { PublicCoachesService } from './public-coaches.service'
-import type { IPublicCoachesRepository } from './public-coaches.repository'
-import type { ICoachProfile } from '../coach-profile/coach-profile.model'
+import type { IPublicCoachesRepository, CoachListItem } from './public-coaches.repository'
 
 const mockProfile = {
   _id: { toString: () => '507f1f77bcf86cd799439011' },
@@ -8,7 +7,8 @@ const mockProfile = {
   displayName: 'Coach Ron',
   isPublic: true,
   totalViews: 5,
-} as unknown as ICoachProfile
+  subscriptionTier: 'starter',
+} as unknown as CoachListItem
 
 const mockRepo: jest.Mocked<IPublicCoachesRepository> = {
   findAll: jest.fn(),
