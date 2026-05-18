@@ -2,7 +2,6 @@ import type { PublicUser } from '@picklecoach/shared'
 import { serverApiFetch } from '@/lib/server-api'
 import { ProfileForm } from '@/components/profile/ProfileForm'
 import { PasswordForm } from '@/components/profile/PasswordForm'
-import { ApplyPromoForm } from '@/components/profile/ApplyPromoForm'
 
 export default async function ProfilePage() {
   const user = await serverApiFetch<PublicUser>('/api/v1/auth/me')
@@ -25,18 +24,11 @@ export default async function ProfilePage() {
         <ProfileForm user={user} />
       </div>
 
-      <div className="mb-5 rounded-xl border border-border bg-surface p-5">
+      <div className="rounded-xl border border-border bg-surface p-5">
         <h2 className="mb-4 border-b border-border pb-3 text-sm font-semibold text-text-primary">
           Change password
         </h2>
         <PasswordForm />
-      </div>
-
-      <div className="rounded-xl border border-border bg-surface p-5">
-        <h2 className="mb-4 border-b border-border pb-3 text-sm font-semibold text-text-primary">
-          Promo code
-        </h2>
-        <ApplyPromoForm />
       </div>
     </div>
   )

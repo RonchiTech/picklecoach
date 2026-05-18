@@ -8,7 +8,6 @@ const TIER_LABEL: Record<SubscriptionTier, string> = {
 }
 
 const STATUS_STYLES: Record<SubscriptionStatus, string> = {
-  trial: 'bg-accent/10 text-accent',
   active: 'bg-green-500/10 text-green-400',
   expired: 'bg-error/10 text-error',
   cancelled: 'bg-muted/10 text-muted',

@@ -3,7 +3,6 @@ import { serverApiFetch } from '@/lib/server-api'
 import { SubscriptionManager } from '@/components/admin/SubscriptionManager'
 
 const STATUS_STYLES: Record<SubscriptionStatus, string> = {
-  trial: 'bg-accent/10 text-accent',
   active: 'bg-green-500/10 text-green-400',
   expired: 'bg-error/10 text-error',
   cancelled: 'bg-muted/10 text-muted',

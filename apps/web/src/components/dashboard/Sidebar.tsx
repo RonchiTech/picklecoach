@@ -24,10 +24,9 @@ const TIER_LABELS: Record<SubscriptionTier, string> = {
 type SidebarProps = {
   coachName: string
   subscriptionTier: SubscriptionTier
-  subscriptionStatus: string
 }
 
-export function Sidebar({ coachName, subscriptionTier, subscriptionStatus }: SidebarProps) {
+export function Sidebar({ coachName, subscriptionTier }: SidebarProps) {
   const router = useRouter()
 
   const handleLogout = async () => {
@@ -50,10 +49,7 @@ export function Sidebar({ coachName, subscriptionTier, subscriptionStatus }: Sid
       <div className="mt-auto border-t border-border pt-4">
         <div className="px-3 py-2">
           <p className="text-sm font-semibold text-text-primary">{coachName}</p>
-          <p className="mt-0.5 text-xs text-text-secondary">
-            {TIER_LABELS[subscriptionTier]}
-            {subscriptionStatus === 'trial' && ' · Trial'}
-          </p>
+          <p className="mt-0.5 text-xs text-text-secondary">{TIER_LABELS[subscriptionTier]}</p>
         </div>
         <button
           onClick={handleLogout}
