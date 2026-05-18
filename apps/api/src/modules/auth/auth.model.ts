@@ -11,7 +11,7 @@ export interface IUser extends Document {
   phone?: string
   subscriptionTier: SubscriptionTier
   subscriptionStatus: SubscriptionStatus
-  trialEndsAt: Date
+  proEndsAt?: Date
   isPublic: boolean
   city?: string
   bio?: string
@@ -31,13 +31,10 @@ const userSchema = new Schema<IUser>(
     subscriptionTier: { type: String, enum: ['starter', 'pro', 'team'], default: 'starter' },
     subscriptionStatus: {
       type: String,
-      enum: ['trial', 'active', 'expired', 'cancelled'],
-      default: 'trial',
+      enum: ['active', 'expired', 'cancelled'],
+      default: 'active',
     },
-    trialEndsAt: {
-      type: Date,
-      default: () => new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-    },
+    proEndsAt: { type: Date },
     isPublic: { type: Boolean, default: true },
     city: { type: String },
     bio: { type: String },

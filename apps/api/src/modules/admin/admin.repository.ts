@@ -3,12 +3,11 @@ import { User } from '../auth/auth.model'
 
 export class AdminRepository {
   async getStats(): Promise<AdminStats> {
-    const [totalCoaches, activeTrials, activeSubscriptions] = await Promise.all([
+    const [totalCoaches, activeSubscriptions] = await Promise.all([
       User.countDocuments({ role: 'coach' }),
-      User.countDocuments({ role: 'coach', subscriptionStatus: 'trial' }),
-      User.countDocuments({ role: 'coach', subscriptionStatus: 'active' }),
+      User.countDocuments({ role: 'coach', subscriptionTier: 'pro' }),
     ])
-    return { totalCoaches, activeTrials, activeSubscriptions }
+    return { totalCoaches, activeTrials: 0, activeSubscriptions }
   }
 
   async listCoaches(): Promise<AdminCoach[]> {

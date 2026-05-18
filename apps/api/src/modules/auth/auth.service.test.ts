@@ -17,7 +17,7 @@ const mockUser = {
   phone: '+63 912 345 6789',
   role: 'coach' as const,
   subscriptionTier: 'starter' as const,
-  subscriptionStatus: 'trial' as const,
+  subscriptionStatus: 'active' as const,
   comparePassword: jest.fn(),
 } as unknown as IUser
 

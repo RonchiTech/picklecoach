@@ -12,8 +12,7 @@ const seed = (overrides: Record<string, unknown> = {}) =>
     passwordHash: 'hash',
     role: 'coach',
     subscriptionTier: 'starter',
-    subscriptionStatus: 'trial',
-    trialEndsAt: new Date(),
+    subscriptionStatus: 'active',
     ...overrides,
   })
 

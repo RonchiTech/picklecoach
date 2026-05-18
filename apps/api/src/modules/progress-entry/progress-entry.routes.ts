@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { authenticate, requireProOrTrial } from '../../middleware/auth.middleware'
+import { authenticate, requirePro } from '../../middleware/auth.middleware'
 import { ProgressEntryRepository } from './progress-entry.repository'
 import { ProgressEntryService } from './progress-entry.service'
 import { ProgressEntryController } from './progress-entry.controller'
@@ -10,7 +10,7 @@ const service = new ProgressEntryService(repo)
 const controller = new ProgressEntryController(service)
 
 router.use(authenticate)
-router.use(requireProOrTrial)
+router.use(requirePro)
 router.get('/', controller.list)
 router.post('/', controller.create)
 router.patch('/:id', controller.update)

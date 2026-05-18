@@ -15,8 +15,6 @@ declare global {
   }
 }
 
-const GRACE_MS = 7 * 24 * 60 * 60 * 1000
-
 export function authenticate(req: Request, _res: Response, next: NextFunction): void {
   const token = req.cookies?.token as string | undefined
   if (!token) return next(createError('Not authenticated', 401, 'NOT_AUTHENTICATED'))
@@ -38,44 +36,16 @@ export function requireRole(...roles: UserRole[]) {
   }
 }
 
-export function requireProOrTrial(req: Request, _res: Response, next: NextFunction): void {
+export function requirePro(req: Request, _res: Response, next: NextFunction): void {
   const userId = req.user?.userId
   if (!userId) return next(createError('Not authenticated', 401, 'NOT_AUTHENTICATED'))
 
   User.findById(userId)
-    .select('subscriptionTier subscriptionStatus')
+    .select('subscriptionTier')
     .then((user) => {
       if (!user) return next(createError('User not found', 404, 'USER_NOT_FOUND'))
-      const { subscriptionTier, subscriptionStatus } = user
-      if (
-        subscriptionTier === 'pro' ||
-        subscriptionTier === 'team' ||
-        subscriptionStatus === 'trial'
-      ) {
-        return next()
-      }
-      return next(createError('This feature requires a Pro subscription', 403, 'TIER_REQUIRED'))
-    })
-    .catch(next)
-}
-
-export function requireActive(req: Request, _res: Response, next: NextFunction): void {
-  const userId = req.user?.userId
-  if (!userId) return next(createError('Not authenticated', 401, 'NOT_AUTHENTICATED'))
-
-  User.findById(userId)
-    .select('trialEndsAt')
-    .then((user) => {
-      if (!user) return next(createError('User not found', 404, 'USER_NOT_FOUND'))
-      const lockedAt = new Date(user.trialEndsAt.getTime() + GRACE_MS)
-      if (new Date() > lockedAt) {
-        return next(
-          createError(
-            'Your trial period has ended. Please contact support to reactivate your account.',
-            403,
-            'ACCOUNT_LOCKED'
-          )
-        )
+      if (user.subscriptionTier !== 'pro' && user.subscriptionTier !== 'team') {
+        return next(createError('This feature requires a Pro subscription', 403, 'TIER_REQUIRED'))
       }
       next()
     })

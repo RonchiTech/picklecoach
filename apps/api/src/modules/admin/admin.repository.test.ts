@@ -23,7 +23,7 @@ const seedCoach = (overrides: Record<string, unknown> = {}) =>
     passwordHash: 'hash',
     role: 'coach',
     subscriptionTier: 'starter',
-    subscriptionStatus: 'trial',
+    subscriptionStatus: 'active',
     ...overrides,
   })
 
@@ -35,18 +35,18 @@ describe('AdminRepository.getStats', () => {
     expect(stats.activeSubscriptions).toBe(0)
   })
 
-  it('counts coaches by status correctly', async () => {
-    await seedCoach({ subscriptionStatus: 'trial' })
-    await seedCoach({ subscriptionStatus: 'trial' })
-    await seedCoach({ subscriptionStatus: 'active' })
+  it('counts coaches by tier correctly', async () => {
+    await seedCoach({ subscriptionTier: 'starter' })
+    await seedCoach({ subscriptionTier: 'starter' })
+    await seedCoach({ subscriptionTier: 'pro' })
     const stats = await repo.getStats()
     expect(stats.totalCoaches).toBe(3)
-    expect(stats.activeTrials).toBe(2)
+    expect(stats.activeTrials).toBe(0)
     expect(stats.activeSubscriptions).toBe(1)
   })
 
   it('excludes super_admin from coach counts', async () => {
-    await seedCoach({ role: 'super_admin', subscriptionStatus: 'trial' })
+    await seedCoach({ role: 'super_admin', subscriptionStatus: 'active' })
     const stats = await repo.getStats()
     expect(stats.totalCoaches).toBe(0)
   })
@@ -89,7 +89,7 @@ describe('AdminRepository.listCoaches', () => {
 
 describe('AdminRepository.updateCoachSubscription', () => {
   it('updates subscriptionTier and sets subscriptionStatus to active', async () => {
-    const coach = await seedCoach({ subscriptionTier: 'starter', subscriptionStatus: 'trial' })
+    const coach = await seedCoach({ subscriptionTier: 'starter', subscriptionStatus: 'active' })
     await repo.updateCoachSubscription(coach._id.toString(), 'pro')
     const updated = await User.findById(coach._id)
     expect(updated?.subscriptionTier).toBe('pro')

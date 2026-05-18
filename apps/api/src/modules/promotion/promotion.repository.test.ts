@@ -154,7 +154,7 @@ describe('UserUpgradeRepository.upgradeTier', () => {
       email: 'coach@test.com',
       passwordHash: 'hash',
       subscriptionTier: 'starter',
-      subscriptionStatus: 'trial',
+      subscriptionStatus: 'active',
     })
     await userRepo.upgradeTier(user._id.toString(), 'pro')
     const updated = await User.findById(user._id)

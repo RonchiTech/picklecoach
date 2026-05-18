@@ -35,6 +35,12 @@ async function registerAndLogin(email = 'coach@test.com') {
   return loginRes.headers['set-cookie'] as unknown as string[]
 }
 
+async function registerAndLoginPro(email = 'pro@test.com') {
+  const cookies = await registerAndLogin(email)
+  await User.updateOne({ email }, { subscriptionTier: 'pro', subscriptionStatus: 'active' })
+  return cookies
+}
+
 async function createStudent(cookies: string[]) {
   const res = await request(app)
     .post('/api/v1/students')
@@ -43,9 +49,9 @@ async function createStudent(cookies: string[]) {
   return res.body.data._id as string
 }
 
-describe('requireProOrTrial middleware', () => {
-  it('allows access during trial (default for new users)', async () => {
-    const cookies = await registerAndLogin('trial@test.com')
+describe('requirePro middleware', () => {
+  it('allows access for Pro coaches', async () => {
+    const cookies = await registerAndLoginPro('pro@test.com')
     const studentId = await createStudent(cookies)
     const res = await request(app)
       .get(`/api/v1/progress-entries?studentId=${studentId}`)
@@ -53,12 +59,8 @@ describe('requireProOrTrial middleware', () => {
     expect(res.status).toBe(200)
   })
 
-  it('blocks access with 403 TIER_REQUIRED when on active Starter plan', async () => {
+  it('blocks access with 403 TIER_REQUIRED for Starter coaches', async () => {
     const cookies = await registerAndLogin('starter@test.com')
-    await User.updateOne(
-      { email: 'starter@test.com' },
-      { subscriptionStatus: 'active', subscriptionTier: 'starter' }
-    )
     const studentId = await createStudent(cookies)
     const res = await request(app)
       .get(`/api/v1/progress-entries?studentId=${studentId}`)
@@ -75,14 +77,14 @@ describe('GET /api/v1/progress-entries', () => {
   })
 
   it('returns 400 when studentId query param is missing', async () => {
-    const cookies = await registerAndLogin()
+    const cookies = await registerAndLoginPro()
     const res = await request(app).get('/api/v1/progress-entries').set('Cookie', cookies)
     expect(res.status).toBe(400)
     expect(res.body.error.code).toBe('VALIDATION_ERROR')
   })
 
   it('returns empty array when no entries exist for student', async () => {
-    const cookies = await registerAndLogin()
+    const cookies = await registerAndLoginPro()
     const studentId = await createStudent(cookies)
     const res = await request(app)
       .get(`/api/v1/progress-entries?studentId=${studentId}`)
@@ -94,7 +96,7 @@ describe('GET /api/v1/progress-entries', () => {
 
 describe('POST /api/v1/progress-entries', () => {
   it('creates an entry and returns 201', async () => {
-    const cookies = await registerAndLogin()
+    const cookies = await registerAndLoginPro()
     const studentId = await createStudent(cookies)
     const res = await request(app)
       .post('/api/v1/progress-entries')
@@ -107,7 +109,7 @@ describe('POST /api/v1/progress-entries', () => {
   })
 
   it('returns 400 VALIDATION_ERROR for empty content', async () => {
-    const cookies = await registerAndLogin()
+    const cookies = await registerAndLoginPro()
     const studentId = await createStudent(cookies)
     const res = await request(app)
       .post('/api/v1/progress-entries')
@@ -118,7 +120,7 @@ describe('POST /api/v1/progress-entries', () => {
   })
 
   it('created entry appears in subsequent GET', async () => {
-    const cookies = await registerAndLogin()
+    const cookies = await registerAndLoginPro()
     const studentId = await createStudent(cookies)
     await request(app)
       .post('/api/v1/progress-entries')
@@ -134,7 +136,7 @@ describe('POST /api/v1/progress-entries', () => {
 
 describe('PATCH /api/v1/progress-entries/:id', () => {
   it('updates the entry content', async () => {
-    const cookies = await registerAndLogin()
+    const cookies = await registerAndLoginPro()
     const studentId = await createStudent(cookies)
     const created = await request(app)
       .post('/api/v1/progress-entries')
@@ -150,7 +152,7 @@ describe('PATCH /api/v1/progress-entries/:id', () => {
   })
 
   it('returns 404 ENTRY_NOT_FOUND for unknown id', async () => {
-    const cookies = await registerAndLogin()
+    const cookies = await registerAndLoginPro()
     const fakeId = new mongoose.Types.ObjectId().toString()
     const res = await request(app)
       .patch(`/api/v1/progress-entries/${fakeId}`)
@@ -163,7 +165,7 @@ describe('PATCH /api/v1/progress-entries/:id', () => {
 
 describe('DELETE /api/v1/progress-entries/:id', () => {
   it('deletes the entry and it no longer appears in GET', async () => {
-    const cookies = await registerAndLogin()
+    const cookies = await registerAndLoginPro()
     const studentId = await createStudent(cookies)
     const created = await request(app)
       .post('/api/v1/progress-entries')
@@ -180,7 +182,7 @@ describe('DELETE /api/v1/progress-entries/:id', () => {
   })
 
   it('returns 404 ENTRY_NOT_FOUND for unknown id', async () => {
-    const cookies = await registerAndLogin()
+    const cookies = await registerAndLoginPro()
     const fakeId = new mongoose.Types.ObjectId().toString()
     const res = await request(app)
       .delete(`/api/v1/progress-entries/${fakeId}`)
