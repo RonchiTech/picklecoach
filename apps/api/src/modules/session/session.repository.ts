@@ -17,6 +17,7 @@ export type SessionUpdateData = {
   scheduledAt?: Date
   durationMinutes?: number
   notes?: string
+  rating?: number
 }
 
 export interface ISessionRepository {
@@ -25,6 +26,7 @@ export interface ISessionRepository {
   create(data: CreateData): Promise<ISession>
   update(id: string, coachId: string, data: SessionUpdateData): Promise<ISession | null>
   countTodayByCoach(coachId: string): Promise<number>
+  clone(id: string, coachId: string): Promise<ISession>
 }
 
 export class SessionRepository implements ISessionRepository {
@@ -53,6 +55,21 @@ export class SessionRepository implements ISessionRepository {
       coachId,
       scheduledAt: { $gte: todayStart, $lte: todayEnd },
       status: { $ne: 'cancelled' },
+    })
+  }
+
+  async clone(id: string, coachId: string): Promise<ISession> {
+    const original = await Session.findOne({ _id: id, coachId })
+    if (!original) throw new Error('Session not found')
+    const scheduledAt = new Date()
+    scheduledAt.setDate(scheduledAt.getDate() + 7)
+    return Session.create({
+      coachId: original.coachId,
+      studentIds: original.studentIds,
+      type: original.type,
+      scheduledAt,
+      durationMinutes: original.durationMinutes,
+      notes: original.notes,
     })
   }
 }

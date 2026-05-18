@@ -10,6 +10,7 @@ export interface ISession extends Document {
   scheduledAt: Date
   durationMinutes: number
   notes?: string
+  rating?: number
 }
 
 const sessionSchema = new Schema<ISession>(
@@ -25,6 +26,7 @@ const sessionSchema = new Schema<ISession>(
     scheduledAt: { type: Date, required: true },
     durationMinutes: { type: Number, default: 60 },
     notes: { type: String },
+    rating: { type: Number, min: 1, max: 5 },
   },
   { timestamps: true }
 )

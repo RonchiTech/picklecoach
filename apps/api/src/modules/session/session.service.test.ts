@@ -22,6 +22,7 @@ const mockRepo: jest.Mocked<ISessionRepository> = {
   create: jest.fn(),
   update: jest.fn(),
   countTodayByCoach: jest.fn(),
+  clone: jest.fn(),
 }
 
 let service: SessionService
