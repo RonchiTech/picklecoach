@@ -21,6 +21,7 @@ export interface IPublicCoachesRepository {
   findAll(params: FindAllParams): Promise<FindAllResult>
   findBySlug(slug: string): Promise<ICoachProfile | null>
   incrementViews(slug: string): Promise<void>
+  findAllPublicSlugs(): Promise<string[]>
 }
 
 export class PublicCoachesRepository implements IPublicCoachesRepository {
@@ -46,5 +47,10 @@ export class PublicCoachesRepository implements IPublicCoachesRepository {
 
   async incrementViews(slug: string): Promise<void> {
     await CoachProfile.updateOne({ slug }, { $inc: { totalViews: 1 } })
+  }
+
+  async findAllPublicSlugs(): Promise<string[]> {
+    const docs = await CoachProfile.find({ isPublic: true }).select('slug').lean()
+    return docs.map((d) => d.slug)
   }
 }

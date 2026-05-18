@@ -135,3 +135,25 @@ describe('PublicCoachesRepository.incrementViews', () => {
     await expect(repo.incrementViews('ghost-slug')).resolves.not.toThrow()
   })
 })
+
+describe('PublicCoachesRepository.findAllPublicSlugs', () => {
+  it('returns empty array when no public profiles exist', async () => {
+    expect(await repo.findAllPublicSlugs()).toEqual([])
+  })
+
+  it('returns only slugs of public profiles', async () => {
+    await seed({ slug: 'alice-ph', isPublic: true })
+    await seed({ slug: 'bob-ph', isPublic: false })
+    const slugs = await repo.findAllPublicSlugs()
+    expect(slugs).toEqual(['alice-ph'])
+  })
+
+  it('returns all slugs when multiple public profiles exist', async () => {
+    await seed({ slug: 'coach-one', isPublic: true })
+    await seed({ slug: 'coach-two', isPublic: true })
+    const slugs = await repo.findAllPublicSlugs()
+    expect(slugs).toHaveLength(2)
+    expect(slugs).toContain('coach-one')
+    expect(slugs).toContain('coach-two')
+  })
+})

@@ -27,4 +27,13 @@ export class PublicCoachesController {
       next(err)
     }
   }
+
+  listSlugs = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const slugs = await this.service.listSlugs()
+      res.json({ success: true, data: slugs })
+    } catch (err) {
+      next(err)
+    }
+  }
 }

@@ -14,6 +14,7 @@ const mockRepo: jest.Mocked<IPublicCoachesRepository> = {
   findAll: jest.fn(),
   findBySlug: jest.fn(),
   incrementViews: jest.fn(),
+  findAllPublicSlugs: jest.fn(),
 }
 
 let service: PublicCoachesService
@@ -79,5 +80,14 @@ describe('PublicCoachesService.getCoachBySlug', () => {
     mockRepo.findBySlug.mockResolvedValue(null)
     await expect(service.getCoachBySlug('ghost')).rejects.toThrow()
     expect(mockRepo.incrementViews).not.toHaveBeenCalled()
+  })
+})
+
+describe('PublicCoachesService.listSlugs', () => {
+  it('delegates to repo.findAllPublicSlugs', async () => {
+    mockRepo.findAllPublicSlugs.mockResolvedValue(['alice-ph', 'bob-ph'])
+    const result = await service.listSlugs()
+    expect(mockRepo.findAllPublicSlugs).toHaveBeenCalledTimes(1)
+    expect(result).toEqual(['alice-ph', 'bob-ph'])
   })
 })

@@ -32,4 +32,8 @@ export class PublicCoachesService {
     await this.repo.incrementViews(slug)
     return profile
   }
+
+  async listSlugs(): Promise<string[]> {
+    return this.repo.findAllPublicSlugs()
+  }
 }

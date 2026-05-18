@@ -18,6 +18,7 @@ const service = new PublicCoachesService(repo)
 const controller = new PublicCoachesController(service)
 
 router.use(limiter)
+router.get('/slugs', controller.listSlugs)
 router.get('/', controller.list)
 router.get('/:slug', controller.getBySlug)
 
