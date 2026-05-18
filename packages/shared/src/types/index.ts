@@ -211,3 +211,34 @@ export interface PublicRedemption {
   discountApplied: number
   redeemedAt: string
 }
+
+export interface AdminCoachSubscriptionHistory {
+  _id: string
+  months: number
+  amountDue: number
+  discountApplied: number
+  promoCode?: string
+  approvedAt: string
+}
+
+export interface AdminCoachDetail extends AdminCoach {
+  studentCount: number
+  sessionCount: number
+  lastSessionAt?: string
+  subscriptionHistory: AdminCoachSubscriptionHistory[]
+}
+
+export interface AdminExpiringSoon {
+  _id: string
+  name: string
+  email: string
+  proEndsAt: string
+  daysLeft: number
+}
+
+export interface AdminChurned {
+  _id: string
+  name: string
+  email: string
+  lastApprovedAt: string
+}
