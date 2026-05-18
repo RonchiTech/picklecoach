@@ -203,3 +203,11 @@ export interface AdminRevenueMonth {
   revenue: number
   count: number
 }
+
+export interface PublicRedemption {
+  _id: string
+  coachName: string
+  coachEmail: string
+  discountApplied: number
+  redeemedAt: string
+}

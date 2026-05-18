@@ -56,4 +56,13 @@ export class PromotionController {
       next(err)
     }
   }
+
+  listRedemptions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const data = await this.service.listRedemptions(req.params.id)
+      res.json({ success: true, data })
+    } catch (err) {
+      next(err)
+    }
+  }
 }

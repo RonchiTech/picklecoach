@@ -1,5 +1,6 @@
 import type {
   CreatePromotionInput,
+  PublicRedemption,
   UpdatePromotionInput,
   ValidatePromoResult,
 } from '@picklecoach/shared'
@@ -61,5 +62,9 @@ export class PromotionService {
   async deactivate(id: string): Promise<void> {
     const success = await this.promoRepo.deactivate(id)
     if (!success) throw createError('Promotion not found', 404, 'PROMO_NOT_FOUND')
+  }
+
+  async listRedemptions(promotionId: string): Promise<PublicRedemption[]> {
+    return this.promoRepo.findRedemptionsByPromotion(promotionId)
   }
 }

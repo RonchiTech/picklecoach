@@ -15,6 +15,7 @@ router.post('/validate', authenticate, controller.validate)
 // Admin only
 router.get('/', authenticate, requireRole('super_admin'), controller.list)
 router.post('/', authenticate, requireRole('super_admin'), controller.create)
+router.get('/:id/redemptions', authenticate, requireRole('super_admin'), controller.listRedemptions)
 router.patch('/:id', authenticate, requireRole('super_admin'), controller.update)
 router.delete('/:id', authenticate, requireRole('super_admin'), controller.deactivate)
 

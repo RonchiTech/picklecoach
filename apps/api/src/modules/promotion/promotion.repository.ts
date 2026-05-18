@@ -1,4 +1,5 @@
-import type { UpdatePromotionInput } from '@picklecoach/shared'
+import mongoose from 'mongoose'
+import type { PublicRedemption, UpdatePromotionInput } from '@picklecoach/shared'
 import { Promotion, Redemption } from './promotion.model'
 import type { IPromotion, IRedemption } from './promotion.model'
 
@@ -27,6 +28,7 @@ export interface IPromotionRepository {
   createRedemption(data: CreateRedemptionData): Promise<IRedemption>
   hasCoachRedeemed(promotionId: string, coachId: string): Promise<boolean>
   incrementRedemptions(promotionId: string): Promise<void>
+  findRedemptionsByPromotion(promotionId: string): Promise<PublicRedemption[]>
 }
 
 export class PromotionRepository implements IPromotionRepository {
@@ -62,5 +64,35 @@ export class PromotionRepository implements IPromotionRepository {
 
   async incrementRedemptions(promotionId: string): Promise<void> {
     await Promotion.findByIdAndUpdate(promotionId, { $inc: { currentRedemptions: 1 } })
+  }
+
+  async findRedemptionsByPromotion(promotionId: string): Promise<PublicRedemption[]> {
+    type RedemptionRow = {
+      _id: mongoose.Types.ObjectId
+      discountApplied: number
+      redeemedAt: Date
+      coach: { name: string; email: string } | null
+    }
+    const rows = await Redemption.aggregate<RedemptionRow>([
+      { $match: { promotionId: new mongoose.Types.ObjectId(promotionId) } },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'coachId',
+          foreignField: '_id',
+          as: 'coach',
+          pipeline: [{ $project: { name: 1, email: 1 } }],
+        },
+      },
+      { $unwind: { path: '$coach', preserveNullAndEmptyArrays: true } },
+      { $sort: { redeemedAt: -1 } },
+    ])
+    return rows.map((r) => ({
+      _id: r._id.toString(),
+      coachName: r.coach?.name ?? 'Unknown',
+      coachEmail: r.coach?.email ?? '',
+      discountApplied: r.discountApplied,
+      redeemedAt: r.redeemedAt.toISOString(),
+    }))
   }
 }

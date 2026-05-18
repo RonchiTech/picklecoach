@@ -28,6 +28,7 @@ const mockPromoRepo: jest.Mocked<IPromotionRepository> = {
   createRedemption: jest.fn(),
   hasCoachRedeemed: jest.fn(),
   incrementRedemptions: jest.fn(),
+  findRedemptionsByPromotion: jest.fn(),
 }
 
 let service: PromotionService
