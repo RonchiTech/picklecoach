@@ -40,6 +40,7 @@ export function SessionForm({ students, session }: SessionFormProps) {
 
     const scheduledLocal = getValue('scheduledAt')
     const scheduledAt = scheduledLocal ? new Date(scheduledLocal).toISOString() : ''
+    const ratingRaw = isEdit ? getValue('rating') : ''
 
     const body = {
       studentIds,
@@ -48,6 +49,7 @@ export function SessionForm({ students, session }: SessionFormProps) {
       durationMinutes: Number(getValue('durationMinutes')),
       notes: getValue('notes') || undefined,
       ...(isEdit ? { status: getValue('status') } : {}),
+      ...(ratingRaw ? { rating: Number(ratingRaw) } : {}),
     }
 
     try {
@@ -149,6 +151,27 @@ export function SessionForm({ students, session }: SessionFormProps) {
             <option value="scheduled">Scheduled</option>
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      )}
+
+      {isEdit && (
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="rating" className={LABEL_CLS}>
+            Session rating <span className="text-muted">(optional)</span>
+          </label>
+          <select
+            id="rating"
+            name="rating"
+            defaultValue={session.rating ?? ''}
+            className={INPUT_CLS}
+          >
+            <option value="">— No rating —</option>
+            <option value={1}>⭐ 1 — Poor</option>
+            <option value={2}>⭐⭐ 2 — Fair</option>
+            <option value={3}>⭐⭐⭐ 3 — Good</option>
+            <option value={4}>⭐⭐⭐⭐ 4 — Great</option>
+            <option value={5}>⭐⭐⭐⭐⭐ 5 — Excellent</option>
           </select>
         </div>
       )}

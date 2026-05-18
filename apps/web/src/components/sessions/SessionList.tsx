@@ -34,9 +34,19 @@ function formatDuration(minutes: number) {
   return m > 0 ? `${h}h ${m}m` : `${h}h`
 }
 
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <span className="text-xs text-yellow-500" title={`${rating}/5`}>
+      {'★'.repeat(rating)}
+      {'☆'.repeat(5 - rating)}
+    </span>
+  )
+}
+
 export function SessionList({ sessions, studentMap }: SessionListProps) {
   const router = useRouter()
   const [loadingId, setLoadingId] = useState<string | null>(null)
+  const [cloningId, setCloningId] = useState<string | null>(null)
 
   async function updateStatus(id: string, status: 'completed' | 'cancelled') {
     setLoadingId(id)
@@ -45,6 +55,16 @@ export function SessionList({ sessions, studentMap }: SessionListProps) {
       router.refresh()
     } finally {
       setLoadingId(null)
+    }
+  }
+
+  async function cloneSession(id: string) {
+    setCloningId(id)
+    try {
+      await apiFetch(`/api/v1/sessions/${id}/clone`, { method: 'POST' })
+      router.refresh()
+    } finally {
+      setCloningId(null)
     }
   }
 
@@ -66,6 +86,7 @@ export function SessionList({ sessions, studentMap }: SessionListProps) {
         const names = s.studentIds.map((id) => studentMap[id]?.name ?? 'Unknown').join(', ')
         const pill = STATUS_PILL[s.status] ?? 'bg-muted/20 text-muted'
         const busy = loadingId === s._id
+        const cloning = cloningId === s._id
 
         return (
           <li
@@ -83,6 +104,7 @@ export function SessionList({ sessions, studentMap }: SessionListProps) {
                 </span>
                 <span className="text-xs text-muted capitalize">{s.type}</span>
                 <span className="text-xs text-muted">{formatDuration(s.durationMinutes)}</span>
+                {s.rating && <StarRating rating={s.rating} />}
               </div>
               {s.notes && <p className="mt-1 text-xs text-muted">{s.notes}</p>}
             </div>
@@ -94,6 +116,14 @@ export function SessionList({ sessions, studentMap }: SessionListProps) {
               >
                 Edit
               </a>
+              <button
+                onClick={() => cloneSession(s._id)}
+                disabled={cloning}
+                className="rounded-lg border border-border px-3 py-1.5 text-xs text-text-secondary hover:border-text-secondary hover:text-text-primary disabled:opacity-50"
+                title="Clone this session for next week"
+              >
+                {cloning ? '…' : 'Clone'}
+              </button>
               {s.status === 'scheduled' && (
                 <>
                   <button
