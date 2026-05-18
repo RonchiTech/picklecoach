@@ -22,7 +22,7 @@ export function GcashSettingsForm({ current }: Props) {
     try {
       await apiFetch('/api/v1/admin/settings/gcash', {
         method: 'PUT',
-        body: JSON.stringify({ number, name, qrUrl: qrUrl || undefined }),
+        body: { number, name, qrUrl: qrUrl || undefined },
       })
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)

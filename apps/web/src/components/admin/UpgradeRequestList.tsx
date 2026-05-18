@@ -23,7 +23,7 @@ export function UpgradeRequestList({ requests }: Props) {
     try {
       await apiFetch(`/api/v1/upgrade-requests/${id}/review`, {
         method: 'PATCH',
-        body: JSON.stringify({ action, notes: notes[id] }),
+        body: { action, notes: notes[id] },
       })
       router.refresh()
     } finally {

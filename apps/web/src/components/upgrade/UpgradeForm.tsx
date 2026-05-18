@@ -63,7 +63,7 @@ export function UpgradeForm({ gcash, hasPending }: Props) {
     try {
       const res = await apiFetch<{ success: true; data: ValidatePromoResult }>(
         '/api/v1/promotions/validate',
-        { method: 'POST', body: JSON.stringify({ code: promoCode, months }) }
+        { method: 'POST', body: { code: promoCode, months } }
       )
       setPromoResult(res.data)
     } catch {
