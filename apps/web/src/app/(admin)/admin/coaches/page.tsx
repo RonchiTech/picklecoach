@@ -1,11 +1,6 @@
-import type { AdminCoach, SubscriptionStatus, SubscriptionTier } from '@picklecoach/shared'
+import type { AdminCoach, SubscriptionStatus } from '@picklecoach/shared'
 import { serverApiFetch } from '@/lib/server-api'
-
-const TIER_LABEL: Record<SubscriptionTier, string> = {
-  starter: 'Starter',
-  pro: 'Pro',
-  team: 'Team',
-}
+import { CoachTierEditor } from '@/components/admin/CoachTierEditor'
 
 const STATUS_STYLES: Record<SubscriptionStatus, string> = {
   active: 'bg-green-500/10 text-green-400',
@@ -50,8 +45,8 @@ export default async function AdminCoachesPage() {
               >
                 <td className="px-4 py-3 text-sm font-medium text-text-primary">{coach.name}</td>
                 <td className="px-4 py-3 text-sm text-text-secondary">{coach.email}</td>
-                <td className="px-4 py-3 text-sm text-text-secondary">
-                  {TIER_LABEL[coach.subscriptionTier]}
+                <td className="px-4 py-3">
+                  <CoachTierEditor coachId={coach._id} currentTier={coach.subscriptionTier} />
                 </td>
                 <td className="px-4 py-3">
                   <span
