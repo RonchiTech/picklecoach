@@ -89,6 +89,16 @@ export class AuthController {
     }
   }
 
+  deleteAccount = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      await this.service.deleteAccount(req.user!.userId)
+      res.clearCookie('token')
+      res.json({ success: true, data: { message: 'Account deleted.' } })
+    } catch (err) {
+      next(err)
+    }
+  }
+
   resetPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { token, newPassword } = resetPasswordSchema.parse(req.body)

@@ -13,6 +13,12 @@ import type {
 import type { IAuthRepository } from './auth.repository'
 import type { IUser } from './auth.model'
 import { createError } from '../../middleware/error.middleware'
+import { Student } from '../student/student.model'
+import { Session } from '../session/session.model'
+import { Payment } from '../payment/payment.model'
+import { ProgressEntry } from '../progress-entry/progress-entry.model'
+import { CoachProfile } from '../coach-profile/coach-profile.model'
+import { UpgradeRequest } from '../upgrade-request/upgrade-request.model'
 import { env } from '../../config/env'
 
 export interface JwtPayload {
@@ -113,6 +119,18 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(newPassword, 12)
     await this.repo.updatePassword(user._id.toString(), passwordHash)
     await this.repo.clearResetToken(user._id.toString())
+  }
+
+  async deleteAccount(userId: string): Promise<void> {
+    await Promise.all([
+      Student.deleteMany({ coachId: userId }),
+      Session.deleteMany({ coachId: userId }),
+      Payment.deleteMany({ coachId: userId }),
+      ProgressEntry.deleteMany({ coachId: userId }),
+      CoachProfile.deleteOne({ coachId: userId }),
+      UpgradeRequest.deleteMany({ coachId: userId }),
+    ])
+    await this.repo.deleteById(userId)
   }
 
   private signToken(user: IUser): string {

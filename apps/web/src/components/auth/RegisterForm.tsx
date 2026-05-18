@@ -8,6 +8,7 @@ export function RegisterForm() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [consented, setConsented] = useState(false)
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -72,10 +73,30 @@ export function RegisterForm() {
           className="rounded-lg border border-border bg-surface px-4 py-2.5 text-text-primary placeholder:text-muted focus:border-accent focus:outline-none"
         />
       </div>
+      <label className="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={consented}
+          onChange={(e) => setConsented(e.target.checked)}
+          className="mt-0.5 shrink-0 accent-[#C8F135]"
+          required
+        />
+        <span className="text-xs text-muted leading-relaxed">
+          I have read and agree to the{' '}
+          <a href="/privacy" target="_blank" className="text-accent hover:underline">
+            Privacy Policy
+          </a>{' '}
+          and{' '}
+          <a href="/terms" target="_blank" className="text-accent hover:underline">
+            Terms of Service
+          </a>
+          .
+        </span>
+      </label>
       {error && <p className="text-sm text-error">{error}</p>}
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || !consented}
         className="rounded-lg bg-accent py-2.5 font-semibold text-[#0C0C10] transition-opacity hover:opacity-90 disabled:opacity-50"
       >
         {loading ? 'Creating account…' : 'Create account'}

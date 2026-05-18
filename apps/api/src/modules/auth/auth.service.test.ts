@@ -31,6 +31,7 @@ const mockRepo: jest.Mocked<IAuthRepository> = {
   setResetToken: jest.fn(),
   findByResetToken: jest.fn(),
   clearResetToken: jest.fn(),
+  deleteById: jest.fn(),
 }
 
 const mockOnRegister = jest.fn()

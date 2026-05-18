@@ -2,6 +2,7 @@ import type { PublicUser } from '@picklecoach/shared'
 import { serverApiFetch } from '@/lib/server-api'
 import { ProfileForm } from '@/components/profile/ProfileForm'
 import { PasswordForm } from '@/components/profile/PasswordForm'
+import { DeleteAccountSection } from '@/components/profile/DeleteAccountSection'
 
 export default async function ProfilePage() {
   const user = await serverApiFetch<PublicUser>('/api/v1/auth/me')
@@ -30,6 +31,8 @@ export default async function ProfilePage() {
         </h2>
         <PasswordForm />
       </div>
+
+      <DeleteAccountSection />
     </div>
   )
 }

@@ -15,6 +15,7 @@ export interface IAuthRepository {
   setResetToken(id: string, tokenHash: string, expiresAt: Date): Promise<void>
   findByResetToken(tokenHash: string): Promise<IUser | null>
   clearResetToken(id: string): Promise<void>
+  deleteById(id: string): Promise<void>
 }
 
 export class UserRepository implements IAuthRepository {
@@ -66,5 +67,9 @@ export class UserRepository implements IAuthRepository {
       { _id: id },
       { $unset: { resetPasswordToken: '', resetPasswordExpiresAt: '' } }
     )
+  }
+
+  async deleteById(id: string): Promise<void> {
+    await User.deleteOne({ _id: id })
   }
 }

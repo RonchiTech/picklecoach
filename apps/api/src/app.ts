@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import { errorMiddleware } from './middleware/error.middleware'
 import { notFoundMiddleware } from './middleware/notFound.middleware'
@@ -28,6 +29,7 @@ export function createApp() {
           else cb(new Error('Not allowed by CORS'))
         }
       : env.CLIENT_URL
+  app.use(helmet())
   app.use(cors({ origin: allowedOrigin, credentials: true }))
   app.use(express.json())
   app.use(cookieParser())
